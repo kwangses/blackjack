@@ -271,7 +271,7 @@ html, body {
   0%   { transform: rotateY(90deg) scale(0.9); opacity: 0.5; }
   100% { transform: rotateY(0deg)  scale(1);   opacity: 1;   }
 }
-.anim-deal { animation: dealIn 0.32s cubic-bezier(.25,.8,.25,1) forwards; }
+.anim-deal { animation: dealIn 0.32s cubic-bezier(.25,.8,.25,1) both; }
 .anim-flip { animation: flipReveal 0.38s ease both; }
 
 /* ============================================================
@@ -1253,7 +1253,7 @@ function fmtSigned(n) { return (n >= 0 ? '+' : '-') + fmt(n); }
 function buildCardEl(card, small, animated) {
   const el = document.createElement('div');
   el.className = ['card', small ? 'small' : '', !card.faceUp ? 'face-down' : suitColor(card.suit)].filter(Boolean).join(' ');
-  if (animated) el.classList.add(card.faceUp ? 'anim-deal' : '');
+  if (animated && card.faceUp) el.classList.add('anim-deal');
   el.dataset.cardId = card.id;
 
   if (!card.faceUp) {
