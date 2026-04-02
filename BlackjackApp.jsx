@@ -338,12 +338,15 @@ export const BettingSystem = {
     const dealerBJ = GameEngine.isBlackjack(dealerHand);
 
     let totalDelta = 0;
+    let totalPnl = 0;
     const updates = hands.map((hand) => {
       let delta = 0;
+      let pnl = 0;
       let outcome = "";
 
       if (hand.surrendered) {
-        delta = -Math.floor(hand.bet / 2);
+        delta = Math.floor(hand.bet / 2);        // return half stake
+        pnl   = -Math.floor(hand.bet / 2);       // net loss = half bet
         outcome = "surrender";
       } else {
         const playerResult = GameEngine.evaluateHand(hand.cards);
@@ -352,34 +355,36 @@ export const BettingSystem = {
         const dealerBust = dealerResult.total > 21;
 
         if (playerBust) {
-          delta = -hand.bet;
+          delta = 0; pnl = -hand.bet;             // bust — bet already gone
           outcome = "lose";
         } else if (playerBJ && dealerBJ) {
-          delta = 0;
+          delta = hand.bet; pnl = 0;              // both BJ — return stake
           outcome = "push";
         } else if (playerBJ) {
-          delta = Math.floor(hand.bet * rules.blackjackPays);
-          outcome = "blackjack";
+          delta = hand.bet + Math.floor(hand.bet * rules.blackjackPays);
+          pnl = Math.floor(hand.bet * rules.blackjackPays);
+          outcome = "blackjack";                  // stake + bonus
         } else if (dealerBJ) {
-          delta = -hand.bet;
+          delta = 0; pnl = -hand.bet;             // dealer BJ — bet gone
           outcome = "lose";
         } else if (dealerBust) {
-          delta = hand.bet;
+          delta = hand.bet * 2; pnl = hand.bet;   // dealer bust
           outcome = "win";
         } else if (playerResult.total > dealerResult.total) {
-          delta = hand.bet;
+          delta = hand.bet * 2; pnl = hand.bet;   // player wins
           outcome = "win";
         } else if (playerResult.total < dealerResult.total) {
-          delta = -hand.bet;
+          delta = 0; pnl = -hand.bet;             // dealer wins
           outcome = "lose";
         } else {
-          delta = 0;
+          delta = hand.bet; pnl = 0;              // push — return stake
           outcome = "push";
         }
       }
 
       totalDelta += delta;
-      return { ...hand, delta, outcome };
+      totalPnl += pnl;
+      return { ...hand, delta, pnl, outcome };
     });
 
     // Update session stats
@@ -392,23 +397,23 @@ export const BettingSystem = {
       else if (h.outcome === "surrender") newStats.handsSurrendered++;
       if (h.outcome === "blackjack") newStats.blackjacksHit++;
     });
-    if (totalDelta > 0) {
+    if (totalPnl > 0) {
       newStats.currentStreak = Math.max(0, newStats.currentStreak) + 1;
       newStats.bestStreak = Math.max(newStats.bestStreak, newStats.currentStreak);
-      newStats.biggestWin = Math.max(newStats.biggestWin, totalDelta);
-    } else if (totalDelta < 0) {
+      newStats.biggestWin = Math.max(newStats.biggestWin, totalPnl);
+    } else if (totalPnl < 0) {
       newStats.currentStreak = Math.min(0, newStats.currentStreak) - 1;
     } else {
       newStats.currentStreak = 0;
     }
-    newStats.sessionPnL += totalDelta;
+    newStats.sessionPnL += totalPnl;
 
-    return { resolvedHands: updates, totalDelta, sessionStats: newStats };
+    return { resolvedHands: updates, totalDelta, totalPnl, sessionStats: newStats };
   },
 
   resolveInsurance(dealerHand, insuranceBet) {
     const dealerBJ = GameEngine.isBlackjack(dealerHand.map((c) => ({ ...c, faceUp: true })));
-    return dealerBJ ? insuranceBet * 2 : -insuranceBet;
+    return dealerBJ ? insuranceBet * 3 : 0;  // premium pre-deducted; 3× = return + 2:1 payout
   },
 };
 

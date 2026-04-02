@@ -39,8 +39,12 @@ Vercel will issue a URL like `https://blackjack-xxx.vercel.app`.
 - **Full Blackjack Actions** — Hit, Stand, Double Down, Split (multi-hand), Surrender, Insurance
 - **Hi-Lo Card Counting** — Running count, true count, decks remaining (toggle in Settings)
 - **Session Stats** — Hands played, win rate, streak, net P&L, and more
-- **Chip Denominations** — $5 / $25 / $100 / $500
+- **Chip Denominations** — $5 / $25 / $100 / $500 (realistic casino-chip styling)
 - **Keyboard Shortcuts** — H (Hit), S (Stand), D (Double), P (Split), R (Surrender), Enter (Deal)
+- **Deal Animation** — Card-by-card deal, flip reveal, and dealer draw with async/await timing
+- **Traditional Chinese (繁中)** — Full UI localisation with casino terminology (zh-TW)
+- **Variant Card Selector** — Card-style variant picker with rule pills instead of plain dropdown
+- **localStorage Persistence** — Balance, stats, and preferences survive page refresh / app kill
 
 ## Updating the App
 
