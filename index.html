@@ -264,14 +264,14 @@ html, body {
 
 /* Card animations */
 @keyframes dealIn {
-  from { opacity: 0; transform: translateY(-30px) rotate(-6deg) scale(0.85); }
-  to   { opacity: 1; transform: translateY(0)     rotate(0deg)   scale(1);   }
+  from { opacity: 1; transform: translateY(-18px) rotate(-4deg) scale(0.88); }
+  to   { opacity: 1; transform: translateY(0)     rotate(0deg)  scale(1);    }
 }
 @keyframes flipReveal {
   0%   { transform: rotateY(90deg) scale(0.9); opacity: 0.5; }
   100% { transform: rotateY(0deg)  scale(1);   opacity: 1;   }
 }
-.anim-deal { animation: dealIn 0.32s cubic-bezier(.25,.8,.25,1) both; }
+.anim-deal { animation: dealIn 0.32s cubic-bezier(.25,.8,.25,1) forwards; }
 .anim-flip { animation: flipReveal 0.38s ease both; }
 
 /* ============================================================
