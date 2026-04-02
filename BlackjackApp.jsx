@@ -418,6 +418,89 @@ export const BettingSystem = {
 };
 
 /* ============================================================
+   2b. BASIC STRATEGY — optimal play lookup tables
+   H=Hit, S=Stand, D=Double(hit if can't), Ds=Double(stand if can't),
+   P=Split, Rh=Surrender(hit), Rs=Surrender(stand), Rp=Surrender(split)
+   ============================================================ */
+const BasicStrategy = {
+  //                        2    3    4    5    6    7    8    9    10   A
+  _hard: {
+    5:['H','H','H','H','H','H','H','H','H','H'],
+    6:['H','H','H','H','H','H','H','H','H','H'],
+    7:['H','H','H','H','H','H','H','H','H','H'],
+    8:['H','H','H','H','H','H','H','H','H','H'],
+    9:['H','D','D','D','D','H','H','H','H','H'],
+    10:['D','D','D','D','D','D','D','D','H','H'],
+    11:['D','D','D','D','D','D','D','D','D','D'],
+    12:['H','H','S','S','S','H','H','H','H','H'],
+    13:['S','S','S','S','S','H','H','H','H','H'],
+    14:['S','S','S','S','S','H','H','H','H','H'],
+    15:['S','S','S','S','S','H','H','H','Rh','Rh'],
+    16:['S','S','S','S','S','H','H','Rh','Rh','Rh'],
+    17:['S','S','S','S','S','S','S','S','S','Rs'],
+    18:['S','S','S','S','S','S','S','S','S','S'],
+    19:['S','S','S','S','S','S','S','S','S','S'],
+    20:['S','S','S','S','S','S','S','S','S','S'],
+    21:['S','S','S','S','S','S','S','S','S','S'],
+  },
+  _soft: {
+    13:['H','H','H','D','D','H','H','H','H','H'],
+    14:['H','H','H','D','D','H','H','H','H','H'],
+    15:['H','H','D','D','D','H','H','H','H','H'],
+    16:['H','H','D','D','D','H','H','H','H','H'],
+    17:['H','D','D','D','D','H','H','H','H','H'],
+    18:['Ds','Ds','Ds','Ds','Ds','S','S','H','H','H'],
+    19:['S','S','S','S','Ds','S','S','S','S','S'],
+    20:['S','S','S','S','S','S','S','S','S','S'],
+    21:['S','S','S','S','S','S','S','S','S','S'],
+  },
+  _pair: {
+    2:['P','P','P','P','P','P','H','H','H','H'],
+    3:['P','P','P','P','P','P','H','H','H','H'],
+    4:['H','H','H','P','P','H','H','H','H','H'],
+    5:['D','D','D','D','D','D','D','D','H','H'],
+    6:['P','P','P','P','P','H','H','H','H','H'],
+    7:['P','P','P','P','P','P','H','H','H','H'],
+    8:['P','P','P','P','P','P','P','P','P','Rp'],
+    9:['P','P','P','P','P','S','P','P','S','S'],
+    10:['S','S','S','S','S','S','S','S','S','S'],
+    11:['P','P','P','P','P','P','P','P','P','P'],
+  },
+  _col(dealerUpCard) {
+    const v = GameEngine.cardValue(dealerUpCard.rank);
+    return v === 11 ? 9 : v - 2;
+  },
+  _resolve(code, canDouble, canSurrender, canSplit) {
+    switch (code) {
+      case 'H': return { action:'hit', reason:'' };
+      case 'S': return { action:'stand', reason:'' };
+      case 'D': return canDouble ? { action:'double', reason:'EV+ double' } : { action:'hit', reason:'Double→hit' };
+      case 'Ds': return canDouble ? { action:'double', reason:'Double if allowed' } : { action:'stand', reason:'Double→stand' };
+      case 'P': return canSplit ? { action:'split', reason:'Split improves EV' } : { action:'hit', reason:'Can\'t split→hit' };
+      case 'Rh': return canSurrender ? { action:'surrender', reason:'Surrender saves ½' } : { action:'hit', reason:'No surr.→hit' };
+      case 'Rs': return canSurrender ? { action:'surrender', reason:'Surrender saves ½' } : { action:'stand', reason:'No surr.→stand' };
+      case 'Rp': return canSurrender ? { action:'surrender', reason:'Surrender preferred' } : canSplit ? { action:'split', reason:'No surr.→split' } : { action:'hit', reason:'Fallback' };
+      default: return { action:'hit', reason:'' };
+    }
+  },
+  getOptimal(playerCards, dealerUpCard, rules, canSplit, canDouble, canSurrender) {
+    const col = BasicStrategy._col(dealerUpCard);
+    const { total, soft } = GameEngine.evaluateHand(playerCards);
+    if (playerCards.length === 2 && playerCards[0].rank === playerCards[1].rank && canSplit) {
+      const pv = GameEngine.cardValue(playerCards[0].rank);
+      const code = BasicStrategy._pair[pv]?.[col];
+      if (code) { const r = BasicStrategy._resolve(code, canDouble, canSurrender, canSplit); if (r.action === 'split') return r; }
+    }
+    if (soft && total >= 13 && total <= 21) {
+      const code = BasicStrategy._soft[total]?.[col];
+      if (code) return BasicStrategy._resolve(code, canDouble, canSurrender, false);
+    }
+    const row = Math.max(5, Math.min(21, total));
+    return BasicStrategy._resolve(BasicStrategy._hard[row]?.[col] || 'H', canDouble, canSurrender, false);
+  },
+};
+
+/* ============================================================
    4. CONSTANTS & HELPERS
    ============================================================ */
 
@@ -440,7 +523,7 @@ const initialPlayerProfile = (balance = 1000) => ({
   id: `player-${Date.now()}`,   // PHASE 2: replace with auth UUID; PHASE 3: wallet address
   balance,
   stats: initialSessionStats(),
-  preferences: { variant: VARIANTS.VEGAS_STRIP, showCount: false, startingBalance: balance },
+  preferences: { variant: VARIANTS.VEGAS_STRIP, showCount: false, showAdvisor: true, startingBalance: balance },
 });
 
 const suit_color = (suit) => (suit === "♥" || suit === "♦" ? "#c0392b" : "#1a1a2e");
@@ -514,13 +597,16 @@ const globalStyle = `
   .cinzel { font-family: 'Cinzel', serif; }
   .playfair { font-family: 'Playfair Display', serif; }
 
-  @keyframes dealIn {
-    from { opacity: 0; transform: translateY(-40px) rotate(-8deg) scale(0.85); }
-    to   { opacity: 1; transform: translateY(0)    rotate(0deg)   scale(1);    }
+  /* ---- Card / chip base animations ---- */
+  @keyframes dealArc {
+    0%   { opacity:0; transform:translate(120px,-80px) rotate(-15deg) scale(.7); }
+    60%  { opacity:1; transform:translate(10px, 8px) rotate(3deg) scale(1.04); }
+    100% { opacity:1; transform:translate(0,0) rotate(0) scale(1); }
   }
-  @keyframes flipIn {
-    0%   { transform: rotateY(90deg) scale(0.9); opacity: 0.5; }
-    100% { transform: rotateY(0deg)  scale(1);   opacity: 1;   }
+  @keyframes flipReveal3D {
+    0%   { transform:perspective(600px) rotateY(180deg) scale(.95); opacity:.6; }
+    50%  { transform:perspective(600px) rotateY(90deg)  scale(1.02); opacity:.8; }
+    100% { transform:perspective(600px) rotateY(0deg)   scale(1);    opacity:1; }
   }
   @keyframes chipBounce {
     0%   { transform: scale(1); }
@@ -540,12 +626,29 @@ const globalStyle = `
     to   { opacity: 1; max-height: 600px; }
   }
 
-  .card-deal { animation: dealIn 0.35s cubic-bezier(.25,.8,.25,1) both; }
-  .card-flip { animation: flipIn 0.4s ease both; }
+  /* ---- Celebration / loss FX ---- */
+  @keyframes goldenGlow {
+    0%,100% { box-shadow: inset 0 0 0 0 transparent; }
+    50%     { box-shadow: inset 0 0 60px 10px rgba(201,168,76,0.35); }
+  }
+  @keyframes redVignette {
+    0%   { box-shadow: inset 0 0 0 0 transparent; }
+    40%  { box-shadow: inset 0 0 80px 20px rgba(231,76,60,0.45); }
+    100% { box-shadow: inset 0 0 0 0 transparent; }
+  }
+  @keyframes goldCoinBurst {
+    0%   { opacity:1; transform:translate(0,0) rotate(0deg) scale(1); }
+    100% { opacity:0; transform:translate(var(--tx),var(--ty)) rotate(var(--rot)) scale(.4); }
+  }
+
+  .card-deal { animation: dealArc 0.38s cubic-bezier(.25,.8,.25,1) both; }
+  .card-flip { animation: flipReveal3D 0.45s ease both; }
   .chip-bounce { animation: chipBounce 0.25s ease; }
   .pulse-gold { animation: pulseGold 2s ease-in-out infinite; }
   .fade-in { animation: fadeIn 0.3s ease both; }
   .slide-down { animation: slideDown 0.4s ease both; }
+  .fx-golden-glow  { animation: goldenGlow 1.5s ease 2; }
+  .fx-red-vignette { animation: redVignette 0.5s ease both; }
 
   button:disabled { opacity: 0.38; cursor: not-allowed; }
   button { cursor: pointer; transition: all 0.15s ease; }
@@ -832,7 +935,7 @@ function StatsPanel({ stats, visible, onClose }) {
 }
 
 // ---- SettingsPanel ----
-function SettingsPanel({ visible, currentVariant, onSelectVariant, onClose, showCount, onToggleCount, startingBalance, onSetBalance, onResetSession }) {
+function SettingsPanel({ visible, currentVariant, onSelectVariant, onClose, showCount, onToggleCount, showAdvisor, onToggleAdvisor, startingBalance, onSetBalance, onResetSession }) {
   const [balInput, setBalInput] = useState(String(startingBalance));
   if (!visible) return null;
   return (
@@ -896,6 +999,25 @@ function SettingsPanel({ visible, currentVariant, onSelectVariant, onClose, show
         >
           <div style={{
             position: "absolute", top: 2, left: showCount ? 20 : 2,
+            width: 18, height: 18, borderRadius: "50%", background: "#fff",
+            transition: "left 0.2s",
+          }} />
+        </button>
+      </div>
+
+      {/* Advisor toggle */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+        <span style={{ color: COLORS.text, fontSize: 13 }}>Strategy Advisor</span>
+        <button
+          onClick={onToggleAdvisor}
+          style={{
+            width: 40, height: 22, borderRadius: 11,
+            background: showAdvisor ? COLORS.gold : COLORS.panelBorder,
+            border: "none", position: "relative", transition: "background 0.2s",
+          }}
+        >
+          <div style={{
+            position: "absolute", top: 2, left: showAdvisor ? 20 : 2,
             width: 18, height: 18, borderRadius: "50%", background: "#fff",
             transition: "left 0.2s",
           }} />
@@ -1016,11 +1138,16 @@ export default function BlackjackApp() {
   const [isFirstAction, setIsFirstAction] = useState(true);
   const [overlayMsg, setOverlayMsg] = useState(null);
   const [overlayColor, setOverlayColor] = useState(null);
+  const [tableFxClass, setTableFxClass] = useState("");
 
   // ---- UI State ----
   const [showStats, setShowStats] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const [variant, setVariant] = useState(VARIANTS.VEGAS_STRIP);
+  const [advisorFeedback, setAdvisorFeedback] = useState(null); // {isCorrect, action}
+  const [mistakeLog, setMistakeLog] = useState([]); // [{playerCards, dealerUp, actions:[], outcome, pnl}]
+  const [sessionDecisions, setSessionDecisions] = useState({total:0, correct:0});
   const rules = GameRules[variant];
 
   // ---- Derived ----
@@ -1037,6 +1164,28 @@ export default function BlackjackApp() {
         player.balance, isFirstAction
       )
     : {};
+
+  // ---- Advisor: compute optimal action ----
+  const currentOptimal = (phase === PHASE.PLAYER_TURN && activeHand && dealerUpCard)
+    ? BasicStrategy.getOptimal(
+        activeHand.cards, dealerUpCard, rules,
+        !!validActions.split, !!validActions.double, !!validActions.surrender
+      )
+    : null;
+
+  const currentHandActionsRef = useRef([]);
+
+  const recordAction = (playerAction) => {
+    if (!currentOptimal) return;
+    const isCorrect = playerAction === currentOptimal.action;
+    currentHandActionsRef.current.push({ playerAction, optimalAction: currentOptimal.action, isCorrect });
+    setSessionDecisions(prev => ({
+      total: prev.total + 1,
+      correct: prev.correct + (isCorrect ? 1 : 0),
+    }));
+    setAdvisorFeedback({ isCorrect, action: currentOptimal.action });
+    setTimeout(() => setAdvisorFeedback(null), 1200);
+  };
 
   // ---- Helpers ----
   const drawCard = (currentShoe, faceUp = true) => {
@@ -1087,14 +1236,34 @@ export default function BlackjackApp() {
           setHands(resolvedHands);
           setPhase(PHASE.RESOLUTION);
 
-          // Display overlay
+          // Display overlay + celebration FX
           const primaryOutcome = resolvedHands[0]?.outcome;
           const totalWinLoss = resolvedHands.reduce((a, h) => a + (h.delta ?? 0), 0);
-          if (primaryOutcome === "blackjack") showOverlay("BLACKJACK!", COLORS.goldLight, 2500);
-          else if (primaryOutcome === "win") showOverlay(`+$${totalWinLoss}`, COLORS.gold, 1800);
-          else if (primaryOutcome === "lose") showOverlay(`-$${Math.abs(totalWinLoss)}`, "#e74c3c", 1800);
-          else if (primaryOutcome === "push") showOverlay("PUSH", COLORS.textMuted, 1500);
-          else if (primaryOutcome === "surrender") showOverlay("SURRENDERED", "#f39c12", 1500);
+          if (primaryOutcome === "blackjack") {
+            showOverlay("BLACKJACK!", COLORS.goldLight, 2500);
+            setTableFxClass("fx-golden-glow");
+          } else if (primaryOutcome === "win") {
+            showOverlay(`+$${totalWinLoss}`, COLORS.gold, 1800);
+          } else if (primaryOutcome === "lose") {
+            showOverlay(`-$${Math.abs(totalWinLoss)}`, "#e74c3c", 1800);
+            setTableFxClass("fx-red-vignette");
+          } else if (primaryOutcome === "push") {
+            showOverlay("PUSH", COLORS.textMuted, 1500);
+          } else if (primaryOutcome === "surrender") {
+            showOverlay("SURRENDERED", "#f39c12", 1500);
+          }
+          setTimeout(() => setTableFxClass(""), 2000);
+
+          // Finalize hand history for MistakeTracker
+          const handEntry = {
+            playerCards: handsArr[0]?.cards.map(c => `${c.rank}${c.suit}`),
+            dealerUp: finalDealer[0] ? `${finalDealer[0].rank}${finalDealer[0].suit}` : '?',
+            actions: [...currentHandActionsRef.current],
+            outcome: primaryOutcome,
+            pnl: totalWinLoss + insurancePayout,
+            time: Date.now(),
+          };
+          setMistakeLog(prev => [handEntry, ...prev].slice(0, 100));
 
           return { ...p, balance: p.balance + totalDelta + insurancePayout, stats: sessionStats };
         });
@@ -1157,6 +1326,7 @@ export default function BlackjackApp() {
     setInsuranceBet(0);
     setIsFirstAction(true);
     setPhase(PHASE.PLAYER_TURN);
+    currentHandActionsRef.current = [];
 
     // Check insurance offer
     const dealerUp = dealerCards[0];
@@ -1198,6 +1368,7 @@ export default function BlackjackApp() {
 
   const handleHit = () => {
     if (!validActions.hit) return;
+    recordAction('hit');
     let s = [...shoe];
     const { card, shoe: newShoe } = drawCard(s);
     s = newShoe;
@@ -1220,12 +1391,14 @@ export default function BlackjackApp() {
 
   const handleStand = () => {
     if (!validActions.stand) return;
+    recordAction('stand');
     setIsFirstAction(false);
     advanceHand(hands, activeHandIndex + 1, dealerHand, shoe, seenCards);
   };
 
   const handleDouble = () => {
     if (!validActions.double) return;
+    recordAction('double');
     const extraBet = activeHand.bet;
     setPlayer((p) => ({ ...p, balance: p.balance - extraBet }));
 
@@ -1248,6 +1421,7 @@ export default function BlackjackApp() {
 
   const handleSplit = () => {
     if (!validActions.split) return;
+    recordAction('split');
     const hand = activeHand;
     const [c1, c2] = hand.cards;
     const extraBet = hand.bet;
@@ -1283,6 +1457,7 @@ export default function BlackjackApp() {
 
   const handleSurrender = () => {
     if (!validActions.surrender) return;
+    recordAction('surrender');
     const updatedHands = hands.map((h, i) =>
       i === activeHandIndex ? { ...h, surrendered: true } : h
     );
@@ -1327,6 +1502,8 @@ export default function BlackjackApp() {
     setHands([]);
     setDealerHand([]);
     setShowSettings(false);
+    setSessionDecisions({total:0, correct:0});
+    setMistakeLog([]);
   };
 
   const handleSetBalance = (bal) => {
@@ -1345,10 +1522,17 @@ export default function BlackjackApp() {
     }));
   };
 
+  const handleToggleAdvisor = () => {
+    setPlayer((p) => ({
+      ...p,
+      preferences: { ...p.preferences, showAdvisor: !p.preferences.showAdvisor },
+    }));
+  };
+
   // Keyboard shortcuts
   useEffect(() => {
     const handler = (e) => {
-      if (showInsurance || showSettings || showStats) return;
+      if (showInsurance || showSettings || showStats || showHistory) return;
       if (phase === PHASE.PLAYER_TURN) {
         if (e.key === "h" || e.key === "H") handleHit();
         if (e.key === "s" || e.key === "S") handleStand();
@@ -1420,6 +1604,8 @@ export default function BlackjackApp() {
               onClose={() => setShowSettings(false)}
               showCount={player.preferences.showCount}
               onToggleCount={handleToggleCount}
+              showAdvisor={player.preferences.showAdvisor}
+              onToggleAdvisor={handleToggleAdvisor}
               startingBalance={player.preferences.startingBalance}
               onSetBalance={handleSetBalance}
               onResetSession={handleResetSession}
@@ -1436,30 +1622,58 @@ export default function BlackjackApp() {
             </div>
           </div>
 
-          {/* Stats button + panel */}
-          <div style={{ position: "relative" }}>
-            <button
-              onClick={() => { setShowStats((v) => !v); setShowSettings(false); }}
-              style={{
-                background: "none", border: `1px solid ${COLORS.panelBorder}`,
-                borderRadius: 6, padding: "5px 12px", color: COLORS.textMuted,
-                fontFamily: "'Cinzel',serif", fontSize: 11, letterSpacing: 1, cursor: "pointer",
-                display: "flex", alignItems: "center", gap: 6,
-              }}
-            >
-              📊 STATS
-            </button>
-            <StatsPanel
-              visible={showStats}
-              stats={player.stats}
-              onClose={() => setShowStats(false)}
-            />
+          {/* Stats + History buttons */}
+          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+            {/* Accuracy badge */}
+            {sessionDecisions.total > 0 && (
+              <span style={{
+                fontSize: 11, fontFamily: "'Cinzel',serif", letterSpacing: 1, padding: "3px 8px",
+                borderRadius: 6,
+                color: (sessionDecisions.correct / sessionDecisions.total) >= 0.8 ? "#27ae60" : (sessionDecisions.correct / sessionDecisions.total) >= 0.6 ? "#f39c12" : "#e74c3c",
+                border: `1px solid ${(sessionDecisions.correct / sessionDecisions.total) >= 0.8 ? "#27ae6044" : (sessionDecisions.correct / sessionDecisions.total) >= 0.6 ? "#f39c1244" : "#e74c3c44"}`,
+              }}>
+                {Math.round((sessionDecisions.correct / sessionDecisions.total) * 100)}%
+              </span>
+            )}
+            {/* History button */}
+            <div style={{ position: "relative" }}>
+              <button
+                onClick={() => { setShowHistory((v) => !v); setShowStats(false); setShowSettings(false); }}
+                style={{
+                  background: "none", border: `1px solid ${COLORS.panelBorder}`,
+                  borderRadius: 6, padding: "5px 12px", color: COLORS.textMuted,
+                  fontFamily: "'Cinzel',serif", fontSize: 11, letterSpacing: 1, cursor: "pointer",
+                  display: "flex", alignItems: "center", gap: 6,
+                }}
+              >
+                📜 HISTORY
+              </button>
+            </div>
+            {/* Stats button + panel */}
+            <div style={{ position: "relative" }}>
+              <button
+                onClick={() => { setShowStats((v) => !v); setShowSettings(false); setShowHistory(false); }}
+                style={{
+                  background: "none", border: `1px solid ${COLORS.panelBorder}`,
+                  borderRadius: 6, padding: "5px 12px", color: COLORS.textMuted,
+                  fontFamily: "'Cinzel',serif", fontSize: 11, letterSpacing: 1, cursor: "pointer",
+                  display: "flex", alignItems: "center", gap: 6,
+                }}
+              >
+                📊 STATS
+              </button>
+              <StatsPanel
+                visible={showStats}
+                stats={player.stats}
+                onClose={() => setShowStats(false)}
+              />
+            </div>
           </div>
         </header>
 
         {/* ===== FELT TABLE ===== */}
         <main
-          className="felt-texture"
+          className={`felt-texture ${tableFxClass}`}
           style={{
             flex: 1, position: "relative", overflow: "hidden",
             display: "flex", flexDirection: "column",
@@ -1627,7 +1841,32 @@ export default function BlackjackApp() {
 
             {/* PLAYER TURN CONTROLS */}
             {phase === PHASE.PLAYER_TURN && !showInsurance && (
-              <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
+              <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap", position: "relative" }}>
+                {/* Strategy Advisor Bar */}
+                {player.preferences.showAdvisor && currentOptimal && (
+                  <div style={{
+                    width: "100%", display: "flex", alignItems: "center", justifyContent: "center",
+                    gap: 8, padding: "6px 12px", marginBottom: 4,
+                    background: "rgba(201,168,76,0.12)", border: `1px solid ${COLORS.gold}44`,
+                    borderRadius: 8, fontFamily: "'Inter',sans-serif",
+                  }}>
+                    <span style={{ color: COLORS.textMuted, fontSize: 11, letterSpacing: 1 }}>OPTIMAL</span>
+                    <span style={{ color: COLORS.gold, fontWeight: 700, fontSize: 14, textTransform: "uppercase" }}>{currentOptimal.action}</span>
+                    {currentOptimal.reason && <span style={{ color: COLORS.textMuted, fontSize: 10 }}>({currentOptimal.reason})</span>}
+                  </div>
+                )}
+                {/* Advisor Feedback Flash */}
+                {advisorFeedback && (
+                  <div style={{
+                    position: "absolute", top: -32, left: "50%", transform: "translateX(-50%)",
+                    padding: "4px 16px", borderRadius: 6, fontSize: 13, fontWeight: 700,
+                    background: advisorFeedback.isCorrect ? "rgba(39,174,96,0.85)" : "rgba(231,76,60,0.85)",
+                    color: "#fff", whiteSpace: "nowrap", zIndex: 50,
+                    animation: "fadeIn 0.2s ease-out",
+                  }}>
+                    {advisorFeedback.isCorrect ? "✓ CORRECT" : "✗ WRONG"}
+                  </div>
+                )}
                 <ActionButton label="Hit" onClick={handleHit} disabled={!validActions.hit} variant="default" />
                 <ActionButton label="Stand" onClick={handleStand} disabled={!validActions.stand} variant="primary" />
                 <ActionButton label="Double" onClick={handleDouble} disabled={!validActions.double} variant="info" />
@@ -1691,6 +1930,74 @@ export default function BlackjackApp() {
             )}
           </div>
         </div>
+
+        {/* ===== HISTORY PANEL ===== */}
+        {showHistory && (
+          <div style={{
+            position: "fixed", top: 0, right: 0, bottom: 0, width: 320, maxWidth: "90vw",
+            background: COLORS.panel, borderLeft: `1px solid ${COLORS.panelBorder}`,
+            zIndex: 300, overflowY: "auto", padding: "16px 20px",
+            boxShadow: "-8px 0 30px rgba(0,0,0,0.6)",
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+              <span style={{ fontFamily: "'Cinzel',serif", color: COLORS.gold, fontSize: 14, letterSpacing: 2 }}>HAND HISTORY</span>
+              <button onClick={() => setShowHistory(false)} style={{ background: "none", border: "none", color: COLORS.textMuted, fontSize: 20, cursor: "pointer" }}>×</button>
+            </div>
+            {/* Accuracy summary */}
+            {sessionDecisions.total > 0 && (
+              <div style={{
+                background: "rgba(0,0,0,0.3)", borderRadius: 8, padding: "8px 12px", marginBottom: 16,
+                display: "flex", justifyContent: "space-between", alignItems: "center",
+              }}>
+                <span style={{ color: COLORS.textMuted, fontSize: 12 }}>Accuracy</span>
+                <span style={{
+                  fontSize: 16, fontWeight: 700, fontFamily: "'Cinzel',serif",
+                  color: (sessionDecisions.correct / sessionDecisions.total) >= 0.8 ? "#27ae60" : (sessionDecisions.correct / sessionDecisions.total) >= 0.6 ? "#f39c12" : "#e74c3c",
+                }}>
+                  {Math.round((sessionDecisions.correct / sessionDecisions.total) * 100)}% ({sessionDecisions.correct}/{sessionDecisions.total})
+                </span>
+              </div>
+            )}
+            {/* History entries */}
+            {mistakeLog.length === 0 ? (
+              <div style={{ color: COLORS.textMuted, textAlign: "center", fontSize: 13, marginTop: 40 }}>No hands played yet</div>
+            ) : (
+              mistakeLog.map((entry, i) => (
+                <div key={i} style={{
+                  background: "rgba(0,0,0,0.2)", borderRadius: 8, padding: "8px 12px", marginBottom: 8,
+                  border: `1px solid ${COLORS.panelBorder}`,
+                }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                    <span style={{ color: COLORS.text, fontSize: 12 }}>{entry.playerCards?.join(' ')}</span>
+                    <span style={{ color: COLORS.textMuted, fontSize: 11 }}>vs {entry.dealerUp}</span>
+                  </div>
+                  <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginBottom: 4 }}>
+                    {entry.actions.map((a, j) => (
+                      <span key={j} style={{
+                        fontSize: 10, padding: "2px 6px", borderRadius: 4,
+                        background: a.isCorrect ? "rgba(39,174,96,0.2)" : "rgba(231,76,60,0.2)",
+                        color: a.isCorrect ? "#27ae60" : "#e74c3c",
+                        border: `1px solid ${a.isCorrect ? "#27ae6044" : "#e74c3c44"}`,
+                      }}>
+                        {a.playerAction}{!a.isCorrect && ` → ${a.optimalAction}`}
+                      </span>
+                    ))}
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span style={{
+                      fontSize: 11, textTransform: "uppercase",
+                      color: entry.outcome === "win" || entry.outcome === "blackjack" ? COLORS.gold : entry.outcome === "lose" ? "#e74c3c" : COLORS.textMuted,
+                    }}>{entry.outcome}</span>
+                    <span style={{
+                      fontSize: 11,
+                      color: (entry.pnl ?? 0) >= 0 ? "#27ae60" : "#e74c3c",
+                    }}>{(entry.pnl ?? 0) >= 0 ? "+" : ""}${entry.pnl ?? 0}</span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
 
       </div>
     </>

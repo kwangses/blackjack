@@ -122,7 +122,7 @@ html, body {
 .hdr-btn:active { opacity: 0.7; transform: scale(0.95); }
 
 /* ============================================================
-   FELT TABLE
+   FELT TABLE — realistic casino table
    ============================================================ */
 #table {
   flex: 1;
@@ -130,12 +130,14 @@ html, body {
   overflow: hidden;
   background-color: var(--felt);
   background-image:
+    radial-gradient(ellipse at 50% 30%, rgba(40,110,60,0.35) 0%, transparent 55%),
     radial-gradient(ellipse at 20% 20%, rgba(255,255,255,0.03) 0%, transparent 60%),
     radial-gradient(ellipse at 80% 80%, rgba(0,0,0,0.2) 0%, transparent 60%),
     repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
   display: flex;
   flex-direction: column;
 }
+/* Casino table arc — bottom semi-ellipse */
 #table::after {
   content: '';
   position: absolute;
@@ -145,6 +147,133 @@ html, body {
   border-radius: 50%;
   border: 3px solid rgba(139,105,20,0.3);
   pointer-events: none;
+}
+/* Inner rail highlight */
+#table::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  border: 2px solid rgba(139,105,20,0.12);
+  border-radius: 0 0 50% 50% / 0 0 8% 8%;
+  pointer-events: none;
+  z-index: 1;
+}
+/* Table info strip — insurance / BJ payout */
+#table-info-strip {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  padding: 4px 12px;
+  background: rgba(0,0,0,0.25);
+  border-bottom: 1px solid rgba(139,105,20,0.2);
+  font-family: var(--serif);
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--gold);
+  opacity: 0.85;
+  z-index: 2;
+}
+#table-info-strip .info-item { white-space: nowrap; }
+#table-info-strip .info-val { color: var(--gold-light); font-weight: 700; }
+
+/* Betting circle on table — for visual */
+.bet-circle {
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  border: 2px dashed rgba(139,105,20,0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0 auto 6px;
+  position: relative;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.bet-circle.has-bet {
+  border-color: var(--gold);
+  box-shadow: 0 0 18px rgba(201,168,76,0.15);
+}
+.bet-circle .bc-label {
+  font-family: var(--serif);
+  font-size: 8px;
+  letter-spacing: 2px;
+  color: var(--gold);
+  opacity: 0.6;
+}
+.bet-circle .bc-chips {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  position: relative;
+  height: 40px;
+}
+.bet-circle .bc-chip {
+  width: 32px; height: 8px;
+  border-radius: 50%;
+  position: absolute;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+.bet-circle .bc-chip.c5   { background: radial-gradient(circle, #ff6b6b, #c0392b); border: 1px solid #a93226; }
+.bet-circle .bc-chip.c25  { background: radial-gradient(circle, #2ecc71, #1e8449); border: 1px solid #196f3d; }
+.bet-circle .bc-chip.c100 { background: radial-gradient(circle, #5dade2, #2471a3); border: 1px solid #1a5276; }
+.bet-circle .bc-chip.c500 { background: radial-gradient(circle, #af7ac5, #7d3c98); border: 1px solid #6c3483; }
+
+/* Dealer hand sprite */
+.dealer-hand-sprite {
+  position: absolute;
+  top: 8px; right: 12px;
+  width: 56px; height: 56px;
+  pointer-events: none;
+  z-index: 3;
+  opacity: 0.85;
+}
+.dealer-hand-sprite .dh-arm {
+  width: 20px; height: 38px;
+  background: linear-gradient(180deg, #ecd4b4 0%, #d4a574 100%);
+  border-radius: 4px 4px 10px 10px;
+  position: absolute;
+  bottom: 0; left: 50%;
+  transform: translateX(-50%);
+  box-shadow: 1px 2px 6px rgba(0,0,0,0.3);
+}
+.dealer-hand-sprite .dh-cuff {
+  position: absolute;
+  bottom: 32px; left: 50%;
+  transform: translateX(-50%);
+  width: 28px; height: 12px;
+  background: #1a1a2e;
+  border-radius: 3px;
+  border-bottom: 2px solid var(--gold-dark);
+}
+.dealer-hand-sprite .dh-finger {
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 14px; height: 14px;
+  background: #ecd4b4;
+  border-radius: 50% 50% 3px 3px;
+}
+/* Dealing animation for dealer hand */
+.dealer-hand-sprite.dealing {
+  animation: dealerHandSwipe 0.5s ease;
+}
+@keyframes dealerHandSwipe {
+  0%   { transform: translate(30px, -20px) rotate(-10deg); opacity: 0; }
+  30%  { opacity: 1; }
+  100% { transform: translate(0, 0) rotate(0deg); opacity: 0.85; }
+}
+/* Flipping animation */
+.dealer-hand-sprite.flipping {
+  animation: dealerHandFlip 0.5s ease;
+}
+@keyframes dealerHandFlip {
+  0%   { transform: rotate(0deg); }
+  30%  { transform: rotate(-15deg) translateY(-8px); }
+  70%  { transform: rotate(5deg); }
+  100% { transform: rotate(0deg); }
 }
 #watermark {
   position: absolute;
@@ -256,16 +385,109 @@ html, body {
 .black-card .card-suit-center { color: #1a1a2e; }
 
 /* Card animations — fill-mode: both ensures visibility during delay */
+@keyframes dealArc {
+  0%   { opacity: 0; transform: translate(120px, -80px) rotate(12deg) scale(0.5); }
+  30%  { opacity: 1; }
+  60%  { transform: translate(20px, -30px) rotate(-3deg) scale(0.95); }
+  100% { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(1); }
+}
 @keyframes dealIn {
   from { opacity: 1; transform: translateY(-18px) rotate(-4deg) scale(0.88); }
   to   { opacity: 1; transform: translateY(0)     rotate(0deg)  scale(1);    }
 }
-@keyframes flipReveal {
-  0%   { transform: rotateY(90deg) scale(0.9); opacity: 0.5; }
-  100% { transform: rotateY(0deg)  scale(1);   opacity: 1;   }
+@keyframes flipReveal3D {
+  0%   { transform: perspective(600px) rotateY(0deg) scale(1); }
+  49%  { transform: perspective(600px) rotateY(90deg) scale(0.92); }
+  50%  { transform: perspective(600px) rotateY(90deg) scale(0.92); }
+  100% { transform: perspective(600px) rotateY(0deg)  scale(1); }
 }
-.anim-deal { animation: dealIn 0.32s cubic-bezier(.25,.8,.25,1) both; }
-.anim-flip { animation: flipReveal 0.38s ease both; }
+@keyframes shuffleRiffle {
+  0%   { transform: translate(0,0) rotate(0deg); }
+  15%  { transform: translate(-4px,-2px) rotate(-2deg); }
+  30%  { transform: translate(4px, 1px) rotate(2deg); }
+  45%  { transform: translate(-3px,-1px) rotate(-1.5deg); }
+  60%  { transform: translate(3px, 2px) rotate(1deg); }
+  75%  { transform: translate(-2px,0) rotate(-0.5deg); }
+  100% { transform: translate(0,0) rotate(0deg); }
+}
+@keyframes chipLand {
+  0%   { opacity: 0; transform: translateY(-30px) scale(0.6); }
+  50%  { opacity: 1; transform: translateY(4px) scale(1.05); }
+  70%  { transform: translateY(-2px) scale(0.97); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes goldCoinBurst {
+  0%   { opacity: 1; transform: translate(0,0) scale(1); }
+  100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(0.3) rotate(var(--rot)); }
+}
+@keyframes goldenGlow {
+  0%, 100% { box-shadow: inset 0 0 30px rgba(201,168,76,0); }
+  50%      { box-shadow: inset 0 0 60px rgba(201,168,76,0.35); }
+}
+@keyframes redVignette {
+  0%   { box-shadow: inset 0 0 80px rgba(192,57,43,0.5); }
+  100% { box-shadow: inset 0 0 0 rgba(192,57,43,0); }
+}
+@keyframes cardScatter {
+  0%   { opacity: 1; transform: translate(0,0) rotate(0deg); }
+  100% { opacity: 0; transform: translate(var(--sx), var(--sy)) rotate(var(--sr)); }
+}
+.anim-deal { animation: dealArc 0.38s cubic-bezier(.25,.8,.25,1) both; }
+.anim-flip { animation: flipReveal3D 0.5s ease both; }
+
+/* Shuffle visual overlay */
+#shuffle-overlay {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  z-index: 45;
+  pointer-events: none;
+  display: none;
+}
+#shuffle-overlay.show { display: flex; gap: 0; align-items: center; justify-content: center; }
+.shuffle-card {
+  width: 60px; height: 84px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #1a2a3a 0%, #0d1520 50%, #1a2a3a 100%);
+  border: 1.5px solid #2a3a4a;
+  position: absolute;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.6);
+}
+
+/* Chip stack in bet area */
+#chip-stack {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 28px;
+  position: relative;
+}
+.chip-stack-item {
+  width: 36px; height: 10px;
+  border-radius: 50%;
+  margin-top: -6px;
+  border: 2px solid;
+  animation: chipLand 0.25s ease both;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+}
+.chip-stack-item.cs5   { background: var(--chip5);  border-color: #c0392b; }
+.chip-stack-item.cs25  { background: var(--chip25); border-color: #1e8449; }
+.chip-stack-item.cs100 { background: var(--chip100);border-color: #2471a3; }
+.chip-stack-item.cs500 { background: var(--chip500);border-color: #7d3c98; }
+
+/* Celebration overlays on #table */
+.fx-golden-glow  { animation: goldenGlow 1.5s ease 2; }
+.fx-red-vignette { animation: redVignette 0.5s ease both; }
+
+/* Particle container */
+#particle-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 42;
+  overflow: hidden;
+}
 
 /* ============================================================
    SCORE BADGE
@@ -842,6 +1064,389 @@ html, body {
 .oc-push     { color: var(--text-muted); }
 .oc-surrender{ color: #f39c12; }
 
+/* ============================================================
+   STRATEGY ADVISOR
+   ============================================================ */
+#advisor-bar {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  padding: 6px 12px;
+  margin-bottom: 6px;
+  border-radius: 8px;
+  background: rgba(0,0,0,0.5);
+  border: 1px solid var(--panel-border);
+  font-size: 12px;
+  transition: all 0.25s;
+}
+#advisor-bar.show { display: flex; }
+#advisor-bar .adv-label {
+  font-family: var(--serif);
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+}
+#advisor-bar .adv-action {
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 1px;
+  padding: 2px 12px;
+  border-radius: 6px;
+  background: rgba(201,168,76,0.15);
+  border: 1px solid var(--gold-dark);
+  color: var(--gold);
+}
+#advisor-bar .adv-reason {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-style: italic;
+}
+
+/* Accuracy badge next to stats */
+.accuracy-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-family: var(--serif);
+  letter-spacing: 1px;
+  background: rgba(0,0,0,0.4);
+  border: 1px solid var(--panel-border);
+  color: var(--text-muted);
+}
+.accuracy-badge .acc-pct {
+  font-weight: 700;
+  font-size: 12px;
+}
+.accuracy-badge.good .acc-pct { color: #2ecc71; }
+.accuracy-badge.ok   .acc-pct { color: #f39c12; }
+.accuracy-badge.bad  .acc-pct { color: #e74c3c; }
+
+/* Post-action feedback flash */
+#advisor-feedback {
+  display: none;
+  text-align: center;
+  padding: 4px 0;
+  font-family: var(--serif);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  transition: opacity 0.3s;
+}
+#advisor-feedback.show { display: block; }
+#advisor-feedback.correct { color: #2ecc71; }
+#advisor-feedback.wrong   { color: #e74c3c; }
+
+/* Hand history panel */
+#history-panel {
+  position: fixed;
+  top: 0; bottom: 0; right: -320px;
+  width: 300px;
+  background: var(--panel);
+  border-left: 1px solid var(--panel-border);
+  z-index: 600;
+  transition: right 0.3s ease;
+  overflow-y: auto;
+  padding: 0;
+}
+#history-panel.show { right: 0; }
+.history-entry {
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  font-size: 11px;
+}
+.history-entry .he-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+.history-entry .he-hand-num {
+  font-family: var(--serif);
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+}
+.history-entry .he-outcome {
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+.history-entry .he-cards {
+  font-size: 13px;
+  margin: 2px 0;
+  color: var(--text);
+}
+.history-entry .he-actions {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-top: 3px;
+}
+.history-entry .he-action-pill {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 8px;
+  font-size: 9px;
+  font-family: var(--sans);
+  border: 1px solid var(--panel-border);
+}
+.he-action-pill.correct { background: rgba(46,204,113,0.12); border-color: #2ecc71; color: #2ecc71; }
+.he-action-pill.wrong   { background: rgba(231,76,60,0.12);  border-color: #e74c3c; color: #e74c3c; }
+.he-action-pill.neutral { background: rgba(255,255,255,0.05); color: var(--text-muted); }
+
+/* ============================================================
+   CHIP PUSH ANIMATIONS — chips move to/from bet circle
+   ============================================================ */
+@keyframes chipPushOut {
+  0%   { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 1; transform: translateY(-60px) scale(0.8); }
+}
+@keyframes chipCollectWin {
+  0%   { opacity: 1; transform: translateY(-60px) scale(0.8); }
+  50%  { opacity: 1; transform: translateY(10px) scale(1.1); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes chipCollectLose {
+  0%   { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-100px) scale(0.4); }
+}
+@keyframes chipPayWin {
+  0%   { opacity: 0; transform: translateY(-80px) scale(0.5); }
+  60%  { opacity: 1; transform: translateY(5px) scale(1.05); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Chip animation trigger classes on .bet-circle */
+.bet-circle.anim-chip-push .bc-chips  { animation: chipPushOut 0.5s ease forwards; }
+.bet-circle.anim-chip-win .bc-chips   { animation: chipCollectWin 0.6s ease forwards; }
+.bet-circle.anim-chip-lose .bc-chips  { animation: chipCollectLose 0.5s ease forwards; }
+
+/* Dealer sprite animation trigger classes */
+.dealer-hand-sprite.dealing .dh-finger { animation: dealerHandSwipe 0.5s ease-in-out infinite; }
+.dealer-hand-sprite.flipping .dh-finger { animation: dealerHandFlip 0.5s ease; }
+
+/* ============================================================
+   AI PLAYER SEATS — left/right of main player
+   ============================================================ */
+#seats-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  padding: 0 4px;
+}
+.ai-seat {
+  flex: 0 0 auto;
+  width: 110px;
+  min-height: 60px;
+  border-radius: 8px;
+  border: 1px dashed rgba(139,105,20,0.2);
+  padding: 4px 4px 6px;
+  text-align: center;
+  position: relative;
+  transition: border-color 0.3s, opacity 0.3s;
+}
+.ai-seat.empty {
+  opacity: 0.4;
+  border-style: dashed;
+}
+.ai-seat.active-turn {
+  border-color: var(--gold);
+  box-shadow: 0 0 12px rgba(201,168,76,0.2);
+}
+.ai-seat .seat-name {
+  font-family: var(--serif);
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: var(--gold);
+  opacity: 0.8;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ai-seat .seat-balance {
+  font-family: var(--sans);
+  font-size: 10px;
+  color: var(--text-muted);
+}
+.ai-seat .seat-cards {
+  display: flex;
+  gap: 2px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 3px 0;
+}
+.ai-seat .seat-bet-circle {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: 1px dashed rgba(139,105,20,0.3);
+  margin: 0 auto 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  color: var(--gold);
+  font-family: var(--serif);
+}
+.ai-seat .seat-outcome {
+  font-family: var(--serif);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+.ai-seat .seat-score {
+  font-size: 10px;
+  color: var(--text);
+  font-weight: 600;
+}
+#player-seat {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 280px;
+}
+
+/* ============================================================
+   WALLET / BUY-IN MODAL
+   ============================================================ */
+#wallet-modal {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--panel);
+  border: 1px solid var(--gold);
+  border-radius: 16px;
+  padding: 24px 28px;
+  text-align: center;
+  z-index: 150;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.8);
+  display: none;
+  min-width: 280px;
+  max-width: 90vw;
+}
+#wallet-modal.show { display: block; }
+#wallet-modal .wm-title {
+  font-family: var(--serif);
+  color: var(--gold);
+  font-size: 16px;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+}
+#wallet-modal .wm-bank {
+  color: var(--text-muted);
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+#wallet-modal .wm-bank .wm-bank-val {
+  color: var(--gold-light);
+  font-weight: 700;
+  font-size: 16px;
+}
+#wallet-modal .wm-limits {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+  letter-spacing: 0.5px;
+}
+#wallet-modal .wm-input-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+#wallet-modal .wm-input {
+  flex: 1;
+  background: rgba(0,0,0,0.4);
+  border: 1px solid var(--panel-border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  color: var(--text);
+  font-size: 14px;
+  font-family: var(--serif);
+  min-height: 44px;
+  -webkit-appearance: none;
+}
+#wallet-modal .wm-quick-btns {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+#wallet-modal .wm-quick {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--panel-border);
+  background: rgba(0,0,0,0.3);
+  color: var(--text);
+  font-family: var(--serif);
+  font-size: 11px;
+  cursor: pointer;
+}
+#wallet-modal .wm-quick:active { background: rgba(201,168,76,0.15); border-color: var(--gold); }
+
+/* Auto-bet toggle */
+.auto-bet-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: var(--serif);
+  letter-spacing: 0.5px;
+}
+.auto-bet-row .toggle-switch { width: 36px; height: 20px; border-radius: 10px; }
+.auto-bet-row .toggle-switch .knob { width: 14px; height: 14px; }
+.auto-bet-row .toggle-switch.on .knob { left: 19px; }
+
+/* AI config panel in settings */
+.ai-config-section {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--panel-border);
+}
+.ai-config-section .aic-title {
+  font-family: var(--serif);
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.ai-seat-config {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 0;
+  font-size: 12px;
+  color: var(--text);
+}
+.ai-seat-config select {
+  background: rgba(0,0,0,0.4);
+  border: 1px solid var(--panel-border);
+  border-radius: 4px;
+  padding: 3px 6px;
+  color: var(--text);
+  font-size: 11px;
+  font-family: var(--sans);
+}
+
+/* Table limits badge in header */
+.table-limits-badge {
+  font-size: 9px;
+  color: var(--text-muted);
+  font-family: var(--serif);
+  letter-spacing: 0.5px;
+  text-align: center;
+  padding: 2px 0;
+}
+
 @media (min-width: 414px) {
   .card { width: 66px; height: 94px; }
   .chip-btn { width: 58px; height: 58px; font-size: 14px; }
@@ -866,14 +1471,27 @@ html, body {
       <div class="main" id="header-main">BLACKJACK</div>
       <div class="sub" id="variant-sub">VEGAS STRIP</div>
     </div>
-    <div style="position:relative">
+    <div style="display:flex;gap:6px;align-items:center">
+      <button class="hdr-btn" id="btn-history" aria-label="Hand History" style="font-size:14px">📜</button>
       <button class="hdr-btn" id="btn-stats" aria-label="Stats">📊 <span id="btn-stats-text">STATS</span></button>
     </div>
   </header>
 
   <!-- FELT TABLE -->
   <div id="table" role="main">
+    <!-- Table info strip — casino table markings -->
+    <div id="table-info-strip">
+      <span class="info-item">INSURANCE PAYS <span class="info-val">2:1</span></span>
+      <span class="info-item">BLACKJACK PAYS <span class="info-val" id="strip-bj-pay">3:2</span></span>
+      <span class="info-item" id="strip-limits">MIN $5 · MAX $500</span>
+    </div>
     <div id="watermark">♠ ♥ ♦ ♣</div>
+    <!-- Dealer hand sprite -->
+    <div class="dealer-hand-sprite" id="dealer-hand-sprite">
+      <div class="dh-finger"></div>
+      <div class="dh-cuff"></div>
+      <div class="dh-arm"></div>
+    </div>
     <div id="table-inner">
       <div id="dealer-zone">
         <div class="zone-label" id="dealer-label">Dealer</div>
@@ -891,16 +1509,47 @@ html, body {
         </div>
       </div>
       <div id="place-bet-msg">PLACE YOUR BET</div>
-      <div id="player-zone">
-        <div class="zone-label" id="player-label">Your Hand</div>
-        <div id="single-hand-area">
-          <div class="card-row" id="player-cards"></div>
-          <div class="score-row" id="player-score-row"></div>
+
+      <!-- ALL PLAYER SEATS (AI left, player center, AI right) -->
+      <div id="seats-row">
+        <div class="ai-seat empty hidden" id="ai-seat-left">
+          <div class="seat-name" id="ai-left-name">CPU 1</div>
+          <div class="seat-bet-circle" id="ai-left-bet">—</div>
+          <div class="seat-cards" id="ai-left-cards"></div>
+          <div class="seat-score" id="ai-left-score"></div>
+          <div class="seat-balance" id="ai-left-balance"></div>
+          <div class="seat-outcome" id="ai-left-outcome"></div>
         </div>
-        <div id="split-zone" class="hidden"></div>
+
+        <div id="player-seat">
+          <div id="player-zone">
+            <div class="zone-label" id="player-label">Your Hand</div>
+            <!-- Bet circle on table -->
+            <div class="bet-circle" id="player-bet-circle">
+              <span class="bc-label">BET</span>
+              <div class="bc-chips" id="bc-chips"></div>
+            </div>
+            <div id="single-hand-area">
+              <div class="card-row" id="player-cards"></div>
+              <div class="score-row" id="player-score-row"></div>
+            </div>
+            <div id="split-zone" class="hidden"></div>
+          </div>
+        </div>
+
+        <div class="ai-seat empty hidden" id="ai-seat-right">
+          <div class="seat-name" id="ai-right-name">CPU 2</div>
+          <div class="seat-bet-circle" id="ai-right-bet">—</div>
+          <div class="seat-cards" id="ai-right-cards"></div>
+          <div class="seat-score" id="ai-right-score"></div>
+          <div class="seat-balance" id="ai-right-balance"></div>
+          <div class="seat-outcome" id="ai-right-outcome"></div>
+        </div>
       </div>
     </div>
     <div id="msg-overlay" role="alert" aria-live="assertive"></div>
+    <div id="shuffle-overlay"></div>
+    <div id="particle-container"></div>
   </div>
 
   <!-- BOTTOM CONTROLS -->
@@ -908,11 +1557,13 @@ html, body {
     <div id="controls-inner">
       <div id="info-row">
         <div class="balance-block">
-          <span class="lbl" id="balance-lbl">BALANCE</span>
+          <span class="lbl" id="balance-lbl">TABLE</span>
           <span class="val" id="balance-val">$1,000</span>
+          <span class="table-limits-badge" id="bank-badge"></span>
         </div>
         <div class="bet-block">
           <span class="lbl" id="bet-lbl">BET</span>
+          <div id="chip-stack"></div>
           <span class="val" id="bet-val">$0</span>
         </div>
         <div class="insurance-pill" id="ins-pill" style="min-width:60px;text-align:right"></div>
@@ -930,9 +1581,19 @@ html, body {
           <button class="action-btn btn-primary" id="btn-deal">Deal</button>
         </div>
         <div class="key-hint" id="hint-betting">ENTER to deal · BACKSPACE to clear</div>
+        <div class="auto-bet-row">
+          <span id="auto-bet-lbl">Auto-bet</span>
+          <button class="toggle-switch" id="auto-bet-toggle" aria-label="Auto bet"><div class="knob"></div></button>
+        </div>
       </div>
 
       <div id="phase-player" class="hidden">
+        <div id="advisor-bar">
+          <span class="adv-label" id="adv-label">OPTIMAL</span>
+          <span class="adv-action" id="adv-action"></span>
+          <span class="adv-reason" id="adv-reason"></span>
+        </div>
+        <div id="advisor-feedback"></div>
         <div id="action-row">
           <button class="action-btn btn-default" id="btn-hit">Hit</button>
           <button class="action-btn btn-primary" id="btn-stand">Stand</button>
@@ -954,7 +1615,8 @@ html, body {
         </div>
         <div id="broke-msg" class="hidden">
           <div class="bm-title" id="broke-title">OUT OF CHIPS</div>
-          <button class="action-btn btn-primary" id="btn-reset-broke">Reset Session</button>
+          <button class="action-btn btn-primary" id="btn-rebuy" style="margin-bottom:6px">Buy More Chips</button>
+          <button class="action-btn btn-danger"  id="btn-leave-table" style="font-size:11px">Leave Table</button>
         </div>
         <div class="key-hint" id="hint-resolution">ENTER or SPACE for next hand</div>
       </div>
@@ -980,6 +1642,10 @@ html, body {
     <span id="count-toggle-lbl">Show Hi-Lo Count</span>
     <button class="toggle-switch" id="count-toggle" aria-label="Toggle card count"><div class="knob"></div></button>
   </div>
+  <div class="toggle-row">
+    <span id="advisor-toggle-lbl">Strategy Advisor</span>
+    <button class="toggle-switch" id="advisor-toggle" aria-label="Toggle strategy advisor"><div class="knob"></div></button>
+  </div>
   <div class="toggle-row" style="margin-top:6px">
     <span id="lang-toggle-lbl">Language</span>
     <div class="lang-toggle" id="lang-toggle">
@@ -993,6 +1659,28 @@ html, body {
     <button class="bal-set-btn" id="bal-set-btn">Set</button>
   </div>
   <button class="reset-btn" id="btn-reset-session">RESET SESSION</button>
+  <!-- AI player config -->
+  <div class="ai-config-section">
+    <div class="aic-title" id="ai-config-title">AI PLAYERS</div>
+    <div class="ai-seat-config">
+      <span id="ai-left-config-lbl">Left Seat</span>
+      <select id="ai-left-select">
+        <option value="off">Off</option>
+        <option value="low">Low IQ</option>
+        <option value="mid">Mid IQ</option>
+        <option value="high">High IQ</option>
+      </select>
+    </div>
+    <div class="ai-seat-config">
+      <span id="ai-right-config-lbl">Right Seat</span>
+      <select id="ai-right-select">
+        <option value="off">Off</option>
+        <option value="low">Low IQ</option>
+        <option value="mid">Mid IQ</option>
+        <option value="high">High IQ</option>
+      </select>
+    </div>
+  </div>
 </div>
 
 <!-- STATS PANEL -->
@@ -1002,6 +1690,16 @@ html, body {
     <button class="panel-close" id="stats-close" aria-label="Close">×</button>
   </div>
   <div id="stats-list"></div>
+</div>
+
+<!-- HAND HISTORY PANEL -->
+<div id="history-panel">
+  <div class="panel-hdr">
+    <span class="title" id="history-panel-title">HAND HISTORY</span>
+    <button class="panel-close" id="history-close" aria-label="Close">×</button>
+  </div>
+  <div id="history-accuracy" style="padding:8px 12px;text-align:center"></div>
+  <div id="history-list"></div>
 </div>
 
 <!-- INSURANCE MODAL -->
@@ -1014,19 +1712,39 @@ html, body {
   </div>
 </div>
 
+<!-- WALLET / BUY-IN MODAL -->
+<div id="wallet-modal" role="dialog" aria-label="Buy chips">
+  <div class="wm-title" id="wm-title">BUY IN</div>
+  <div class="wm-bank">Bank Balance: <span class="wm-bank-val" id="wm-bank-val">$10,000</span></div>
+  <div class="wm-limits" id="wm-limits">Table limits: min $5 · max bet $500 · max buy-in $5,000</div>
+  <div class="wm-quick-btns">
+    <button class="wm-quick" data-buyin="500">$500</button>
+    <button class="wm-quick" data-buyin="1000">$1K</button>
+    <button class="wm-quick" data-buyin="2500">$2.5K</button>
+    <button class="wm-quick" data-buyin="5000">$5K</button>
+  </div>
+  <div class="wm-input-row">
+    <input class="wm-input" type="number" id="wm-amount" min="100" step="100" placeholder="Enter amount" inputmode="numeric">
+    <button class="action-btn btn-primary" id="wm-buyin-btn" style="min-width:70px">Buy In</button>
+  </div>
+  <button class="action-btn btn-danger" id="wm-leave-btn" style="width:100%;margin-top:8px;font-size:11px">Leave Table</button>
+</div>
+
 <script>
 /* ============================================================
    BLACKJACK PWA — Modular Architecture
    ============================================================
-   MODULE 1: GameRules        — variant configs (pure data)
-   MODULE 2: GameEngine       — pure card/hand logic
-   MODULE 3: BettingSystem    — balance management (fixed)
-   MODULE 4: AnimationEngine  — card deal/flip/reveal animations
-   MODULE 5: GameState (GS)   — single source of truth
-   MODULE 6: Localisation     — STRINGS & language helpers
-   MODULE 7: StorageManager   — localStorage persistence
-   MODULE 8: UIRenderer       — DOM rendering functions
-   MODULE 9: GameActions      — user actions & game flow
+   MODULE 1:  GameRules        — variant configs (pure data)
+   MODULE 2:  GameEngine       — pure card/hand logic
+   MODULE 2b: BasicStrategy    — optimal play lookup tables
+   MODULE 3:  BettingSystem    — balance management (fixed)
+   MODULE 4:  AnimationEngine  — card deal/flip/reveal animations
+   MODULE 5:  GameState (GS)   — single source of truth
+   MODULE 5b: MistakeTracker   — advisor accuracy & hand history
+   MODULE 6:  Localisation     — STRINGS & language helpers
+   MODULE 7:  StorageManager   — localStorage persistence
+   MODULE 8:  UIRenderer       — DOM rendering functions
+   MODULE 9:  GameActions      — user actions & game flow
    MODULE 10: SettingsController — settings panel, variant selection
    ============================================================ */
 
@@ -1166,6 +1884,157 @@ const GameEngine = {
 };
 
 /* ============================================================
+   MODULE 2b: BASIC STRATEGY — optimal play lookup tables
+   Source: standard multi-deck basic strategy (H17 / S17 adjusted)
+   Keys: dealer upcard value (2-11, A=11)
+   H = Hit, S = Stand, D = Double (hit if can't), P = Split,
+   Ds = Double (stand if can't), Rh = Surrender (hit if can't),
+   Rs = Surrender (stand if can't), Rp = Surrender (split if can't)
+   ============================================================ */
+const BasicStrategy = {
+  // Hard totals: row = player total (5-21), col = dealer upcard (2-11)
+  //                        2    3    4    5    6    7    8    9    10   A
+  _hard: {
+    5:  ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'],
+    6:  ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'],
+    7:  ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'],
+    8:  ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'],
+    9:  ['H', 'D', 'D', 'D', 'D', 'H', 'H', 'H', 'H', 'H'],
+    10: ['D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'H', 'H'],
+    11: ['D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D'],
+    12: ['H', 'H', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'],
+    13: ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'],
+    14: ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'],
+    15: ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'Rh','Rh'],
+    16: ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'Rh','Rh','Rh'],
+    17: ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'Rs'],
+    18: ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
+    19: ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
+    20: ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
+    21: ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
+  },
+
+  // Soft totals: row = player total (13-21), col = dealer upcard (2-11)
+  //                         2    3    4    5    6    7    8    9    10   A
+  _soft: {
+    13: ['H', 'H', 'H', 'D', 'D', 'H', 'H', 'H', 'H', 'H'],
+    14: ['H', 'H', 'H', 'D', 'D', 'H', 'H', 'H', 'H', 'H'],
+    15: ['H', 'H', 'D', 'D', 'D', 'H', 'H', 'H', 'H', 'H'],
+    16: ['H', 'H', 'D', 'D', 'D', 'H', 'H', 'H', 'H', 'H'],
+    17: ['H', 'D', 'D', 'D', 'D', 'H', 'H', 'H', 'H', 'H'],
+    18: ['Ds','Ds','Ds','Ds','Ds','S', 'S', 'H', 'H', 'H'],
+    19: ['S', 'S', 'S', 'S', 'Ds','S', 'S', 'S', 'S', 'S'],
+    20: ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
+    21: ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
+  },
+
+  // Pairs: row = card rank value (2-11), col = dealer upcard (2-11)
+  //                        2    3    4    5    6    7    8    9    10   A
+  _pair: {
+    2:  ['P', 'P', 'P', 'P', 'P', 'P', 'H', 'H', 'H', 'H'],
+    3:  ['P', 'P', 'P', 'P', 'P', 'P', 'H', 'H', 'H', 'H'],
+    4:  ['H', 'H', 'H', 'P', 'P', 'H', 'H', 'H', 'H', 'H'],
+    5:  ['D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'H', 'H'],
+    6:  ['P', 'P', 'P', 'P', 'P', 'H', 'H', 'H', 'H', 'H'],
+    7:  ['P', 'P', 'P', 'P', 'P', 'P', 'H', 'H', 'H', 'H'],
+    8:  ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'Rp'],
+    9:  ['P', 'P', 'P', 'P', 'P', 'S', 'P', 'P', 'S', 'S'],
+    10: ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
+    11: ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'],
+  },
+
+  // Reason explanations for key decisions
+  _reasons: {
+    'D':  'EV+ double opportunity',
+    'Ds': 'Double if allowed, else stand',
+    'P':  'Splitting improves EV',
+    'Rh': 'Surrender saves ½ bet; else hit',
+    'Rs': 'Surrender saves ½ bet; else stand',
+    'Rp': 'Surrender preferred; else split',
+    'H_soft': 'Soft hand — safe to take a card',
+    'S_hard': 'Standing protects against bust',
+    'S_soft': 'Soft total strong enough to stand',
+    'H_hard': 'Total too low — must improve',
+    'H_stiff': 'Risky but hitting has better EV',
+  },
+
+  /** Convert upcard to column index (0-9) */
+  _col(dealerUpCard) {
+    const v = GameEngine.cardValue(dealerUpCard.rank);
+    return v === 11 ? 9 : v - 2;  // A→9, 2→0, ..., 10→8
+  },
+
+  /**
+   * Get optimal action for current hand state.
+   * Returns { action: 'hit'|'stand'|'double'|'split'|'surrender', reason: string }
+   */
+  getOptimal(playerCards, dealerUpCard, rules, canSplit, canDouble, canSurrender) {
+    const col = BasicStrategy._col(dealerUpCard);
+    const { total, soft } = GameEngine.evaluateHand(playerCards);
+
+    // Pair check
+    if (playerCards.length === 2 && playerCards[0].rank === playerCards[1].rank && canSplit) {
+      const pairVal = GameEngine.cardValue(playerCards[0].rank);
+      const code = BasicStrategy._pair[pairVal]?.[col];
+      if (code) {
+        const resolved = BasicStrategy._resolve(code, canDouble, canSurrender, canSplit);
+        if (resolved.action === 'split') return resolved;
+        // If pair table says don't split (e.g. 5-5 → Double), fall through to hard/soft
+      }
+    }
+
+    // Soft hand check
+    if (soft && total >= 13 && total <= 21) {
+      const code = BasicStrategy._soft[total]?.[col];
+      if (code) {
+        const resolved = BasicStrategy._resolve(code, canDouble, canSurrender, false);
+        resolved.reason = resolved.reason || (resolved.action === 'hit' ? BasicStrategy._reasons.H_soft : BasicStrategy._reasons.S_soft);
+        return resolved;
+      }
+    }
+
+    // Hard hand
+    const row = Math.max(5, Math.min(21, total));
+    const code = BasicStrategy._hard[row]?.[col] || 'H';
+    const resolved = BasicStrategy._resolve(code, canDouble, canSurrender, false);
+    if (!resolved.reason) {
+      if (resolved.action === 'hit') resolved.reason = total <= 11 ? BasicStrategy._reasons.H_hard : BasicStrategy._reasons.H_stiff;
+      else if (resolved.action === 'stand') resolved.reason = BasicStrategy._reasons.S_hard;
+    }
+    return resolved;
+  },
+
+  /** Resolve chart code to actual action considering available actions */
+  _resolve(code, canDouble, canSurrender, canSplit) {
+    switch (code) {
+      case 'H':  return { action: 'hit',       reason: '' };
+      case 'S':  return { action: 'stand',      reason: '' };
+      case 'D':  return canDouble
+                   ? { action: 'double',    reason: BasicStrategy._reasons.D }
+                   : { action: 'hit',       reason: BasicStrategy._reasons.D + ' (can\'t double → hit)' };
+      case 'Ds': return canDouble
+                   ? { action: 'double',    reason: BasicStrategy._reasons.Ds }
+                   : { action: 'stand',     reason: BasicStrategy._reasons.Ds + ' (can\'t double → stand)' };
+      case 'P':  return canSplit
+                   ? { action: 'split',     reason: BasicStrategy._reasons.P }
+                   : { action: 'hit',       reason: BasicStrategy._reasons.P + ' (can\'t split → hit)' };
+      case 'Rh': return canSurrender
+                   ? { action: 'surrender', reason: BasicStrategy._reasons.Rh }
+                   : { action: 'hit',       reason: BasicStrategy._reasons.Rh + ' (no surrender → hit)' };
+      case 'Rs': return canSurrender
+                   ? { action: 'surrender', reason: BasicStrategy._reasons.Rs }
+                   : { action: 'stand',     reason: BasicStrategy._reasons.Rs + ' (no surrender → stand)' };
+      case 'Rp': return canSurrender
+                   ? { action: 'surrender', reason: BasicStrategy._reasons.Rp }
+                   : canSplit
+                     ? { action: 'split',   reason: BasicStrategy._reasons.Rp + ' (no surrender → split)' }
+                     : { action: 'hit',     reason: 'Fallback' };
+      default:   return { action: 'hit',    reason: '' };
+    }
+  },
+};
+
+/* ============================================================
    MODULE 3: BETTING SYSTEM — balance management (FIXED)
    BUG FIX: deltas corrected for pre-deducted bet model.
      delta = amount to ADD BACK to balance after resolution
@@ -1244,37 +2113,225 @@ const BettingSystem = {
 };
 
 /* ============================================================
-   MODULE 4: ANIMATION ENGINE — card deal/flip/reveal
+   MODULE 4: ANIMATION ENGINE — card deal/flip/reveal + FX
    Future: extract to animationEngine.js
    ============================================================ */
-const ANIM = { DEAL_INTERVAL: 280, DEALER_DRAW_INTERVAL: 350, HOLE_REVEAL_DELAY: 400 };
+const ANIM = { DEAL_INTERVAL: 320, DEALER_DRAW_INTERVAL: 420, HOLE_REVEAL_DELAY: 450, SHUFFLE_DURATION: 1200 };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
+/* --- Web Audio: short card-slide noise burst (no external files) --- */
+let _audioCtx = null;
+function getAudioCtx() {
+  if (!_audioCtx) { try { _audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} }
+  return _audioCtx;
+}
+function playCardSound() {
+  const ctx = getAudioCtx(); if (!ctx) return;
+  const dur = 0.08, buf = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * dur), ctx.sampleRate);
+  const ch = buf.getChannelData(0);
+  for (let i = 0; i < ch.length; i++) ch[i] = (Math.random() * 2 - 1) * (1 - i / ch.length) * 0.18;
+  const src = ctx.createBufferSource(); src.buffer = buf;
+  const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 2000;
+  const gain = ctx.createGain(); gain.gain.value = 0.4;
+  src.connect(hp).connect(gain).connect(ctx.destination);
+  src.start(ctx.currentTime);
+}
+
 const AnimationEngine = {
+  /** Shuffle riffle visual — 1.2s async */
+  async shuffleAnimation() {
+    const overlay = $('shuffle-overlay');
+    overlay.innerHTML = '';
+    overlay.classList.add('show');
+    const cardCount = 6;
+    for (let i = 0; i < cardCount; i++) {
+      const c = document.createElement('div');
+      c.className = 'shuffle-card';
+      c.style.animation = `shuffleRiffle ${ANIM.SHUFFLE_DURATION}ms ease ${i * 60}ms both`;
+      c.style.transform = `translate(${(i - cardCount/2) * 3}px, ${(i % 2) * 4 - 2}px)`;
+      c.style.zIndex = i;
+      overlay.appendChild(c);
+    }
+    playCardSound();
+    await sleep(ANIM.SHUFFLE_DURATION);
+    overlay.classList.remove('show');
+    overlay.innerHTML = '';
+  },
+
+  /** Deal a single card with arc trajectory + sound */
   dealCard(containerId, card, small) {
     return new Promise(resolve => {
+      playCardSound();
       const el = UIRenderer.buildCardEl(card, small, true);
       $(containerId).appendChild(el);
       setTimeout(resolve, ANIM.DEAL_INTERVAL);
     });
   },
+
+  /** Dealer draws cards one-by-one with pacing + sound + score update */
   async dealerDrawCards(cards) {
-    for (const card of cards) {
-      const el = UIRenderer.buildCardEl(card, false, true);
+    for (let i = 0; i < cards.length; i++) {
+      await sleep(400);
+      playCardSound();
+      const el = UIRenderer.buildCardEl(cards[i], false, true);
       $('dealer-cards').appendChild(el);
+      // Update score after each card
+      $('dealer-score-row').innerHTML = '';
+      $('dealer-score-row').appendChild(UIRenderer.scoreBadgeEl(GS.dealerHand.slice(0, GS.dealerHand.length - cards.length + i + 1), true, null));
       await sleep(ANIM.DEALER_DRAW_INTERVAL);
     }
   },
+
+  /** 3D flip: build face-down, swap to face-up at midpoint */
   revealHoleCard() {
     const dc = $('dealer-cards');
     dc.innerHTML = '';
     GS.dealerHand.forEach((c, i) => {
-      const el = UIRenderer.buildCardEl(c, false, false);
-      if (i === 1) el.classList.add('anim-flip');
-      dc.appendChild(el);
+      if (i === 1) {
+        // Build a face-down shell, animate flip, swap content at midpoint
+        const wrapper = document.createElement('div');
+        wrapper.style.cssText = 'display:inline-block;perspective:600px';
+        const el = UIRenderer.buildCardEl({...c, faceUp: false}, false, false);
+        el.classList.add('anim-flip');
+        // At 50% (250ms of 500ms), swap to face-up content
+        setTimeout(() => {
+          const faceEl = UIRenderer.buildCardEl(c, false, false);
+          faceEl.style.animation = 'none';
+          wrapper.innerHTML = '';
+          wrapper.appendChild(faceEl);
+        }, 250);
+        wrapper.appendChild(el);
+        dc.appendChild(wrapper);
+      } else {
+        dc.appendChild(UIRenderer.buildCardEl(c, false, false));
+      }
     });
+    playCardSound();
     $('dealer-score-row').innerHTML = '';
     $('dealer-score-row').appendChild(UIRenderer.scoreBadgeEl(GS.dealerHand, true, null));
+  },
+
+  /** Chip stack visual — call when bet changes */
+  renderChipStack(totalBet) {
+    const stack = $('chip-stack'); stack.innerHTML = '';
+    if (totalBet <= 0) return;
+    const denoms = [500, 100, 25, 5];
+    let remaining = totalBet;
+    const chips = [];
+    for (const d of denoms) { while (remaining >= d) { chips.push(d); remaining -= d; } }
+    chips.reverse().forEach((d, i) => {
+      const el = document.createElement('div');
+      el.className = `chip-stack-item cs${d}`;
+      el.style.animationDelay = `${i * 40}ms`;
+      stack.appendChild(el);
+    });
+  },
+
+  /* --- Celebration FX --- */
+  /** Gold coin particle burst */
+  goldCoinBurst() {
+    const container = $('particle-container');
+    const count = 18;
+    for (let i = 0; i < count; i++) {
+      const p = document.createElement('div');
+      const angle = (Math.PI * 2 / count) * i + (Math.random() * 0.4 - 0.2);
+      const dist = 60 + Math.random() * 100;
+      p.style.cssText = `
+        position:absolute;top:50%;left:50%;width:12px;height:12px;border-radius:50%;
+        background:radial-gradient(circle,#f0d070,#C9A84C);border:1px solid #8B6914;
+        --tx:${Math.cos(angle) * dist}px;--ty:${Math.sin(angle) * dist}px;--rot:${Math.random()*360}deg;
+        animation:goldCoinBurst 0.9s cubic-bezier(.25,.8,.25,1) both;
+        animation-delay:${i*30}ms;pointer-events:none;z-index:50;
+      `;
+      container.appendChild(p);
+    }
+    setTimeout(() => container.innerHTML = '', 1200);
+  },
+
+  /** Golden edge glow for BJ */
+  goldenGlow() {
+    const t = $('table');
+    t.classList.remove('fx-golden-glow'); void t.offsetWidth;
+    t.classList.add('fx-golden-glow');
+    setTimeout(() => t.classList.remove('fx-golden-glow'), 3200);
+  },
+
+  /** Red vignette flash for lose */
+  redVignette() {
+    const t = $('table');
+    t.classList.remove('fx-red-vignette'); void t.offsetWidth;
+    t.classList.add('fx-red-vignette');
+    setTimeout(() => t.classList.remove('fx-red-vignette'), 600);
+  },
+
+  /** Card scatter for bust */
+  bustScatter() {
+    const cards = document.querySelectorAll('#player-cards .card, .split-hand-box.active-hand .card');
+    cards.forEach((el, i) => {
+      const sx = (Math.random() * 200 - 100) + 'px';
+      const sy = (Math.random() * 120 + 40) + 'px';
+      const sr = (Math.random() * 60 - 30) + 'deg';
+      el.style.setProperty('--sx', sx);
+      el.style.setProperty('--sy', sy);
+      el.style.setProperty('--sr', sr);
+      el.style.animation = `cardScatter 0.6s ${i * 50}ms ease forwards`;
+    });
+  },
+};
+
+/* ============================================================
+   MODULE 4b: CHIP ANIMATIONS — push/collect chip movements
+   ============================================================ */
+const ChipAnimations = {
+  pushBetIn() {
+    const bc = $('player-bet-circle');
+    if (!bc) return;
+    bc.classList.remove('anim-chip-push', 'anim-chip-win', 'anim-chip-lose');
+    void bc.offsetWidth;
+    bc.classList.add('anim-chip-push');
+    setTimeout(() => bc.classList.remove('anim-chip-push'), 600);
+  },
+  collectWin() {
+    const bc = $('player-bet-circle');
+    if (!bc) return;
+    bc.classList.remove('anim-chip-push', 'anim-chip-win', 'anim-chip-lose');
+    void bc.offsetWidth;
+    bc.classList.add('anim-chip-win');
+    setTimeout(() => bc.classList.remove('anim-chip-win'), 700);
+  },
+  collectLose() {
+    const bc = $('player-bet-circle');
+    if (!bc) return;
+    bc.classList.remove('anim-chip-push', 'anim-chip-win', 'anim-chip-lose');
+    void bc.offsetWidth;
+    bc.classList.add('anim-chip-lose');
+    setTimeout(() => bc.classList.remove('anim-chip-lose'), 600);
+  },
+};
+
+/* ============================================================
+   MODULE 4c: DEALER SPRITE — dealer hand animation triggers
+   ============================================================ */
+const DealerSprite = {
+  startDeal() {
+    const el = $('dealer-hand-sprite');
+    if (!el) return;
+    el.classList.add('dealing');
+  },
+  endDeal() {
+    const el = $('dealer-hand-sprite');
+    if (!el) return;
+    el.classList.remove('dealing');
+  },
+  startFlip() {
+    const el = $('dealer-hand-sprite');
+    if (!el) return;
+    el.classList.add('flipping');
+  },
+  endFlip() {
+    const el = $('dealer-hand-sprite');
+    if (!el) return;
+    el.classList.remove('flipping', 'dealing');
   },
 };
 
@@ -1293,7 +2350,7 @@ function makePlayer(balance = 1000) {
     id: `player-${Date.now()}`,
     balance,
     stats: makeStats(),
-    preferences: { variant: VARIANTS.VEGAS_STRIP, showCount: false, startingBalance: balance, lang: 'en' },
+    preferences: { variant: VARIANTS.VEGAS_STRIP, showCount: false, showAdvisor: true, startingBalance: balance, lang: 'en' },
   };
 }
 
@@ -1309,6 +2366,7 @@ const GS = {
   insuranceBet: 0,
   isFirstAction: true,
   animating: false,
+  _currentOptimal: null,
 };
 
 function rules() { return GameRules[GS.player.preferences.variant]; }
@@ -1323,6 +2381,358 @@ function reshuffleShoe() {
   GS.seenCards = [];
   UIRenderer.updateCount();
 }
+
+/* ============================================================
+   MODULE 5b: MISTAKE TRACKER — advisor accuracy & hand history
+   Records each player decision vs. optimal, builds hand history.
+   Persisted to localStorage alongside player data.
+   ============================================================ */
+const HISTORY_KEY = 'blackjack_history_v1';
+const MAX_HISTORY = 100;
+
+const MistakeTracker = {
+  /** Per-session decision stats */
+  decisions: { total: 0, correct: 0 },
+  /** Hand history array — most recent first */
+  history: [],
+  /** Actions taken in current hand (filled as player acts) */
+  _currentActions: [],
+
+  accuracy() {
+    if (MistakeTracker.decisions.total === 0) return null;
+    return Math.round((MistakeTracker.decisions.correct / MistakeTracker.decisions.total) * 100);
+  },
+
+  recordDecision(playerAction, optimalAction, playerCards, dealerUpCard) {
+    const isCorrect = playerAction === optimalAction.action;
+    MistakeTracker.decisions.total++;
+    if (isCorrect) MistakeTracker.decisions.correct++;
+    MistakeTracker._currentActions.push({
+      action: playerAction,
+      optimal: optimalAction.action,
+      reason: optimalAction.reason,
+      correct: isCorrect,
+      total: GameEngine.evaluateHand(playerCards).total,
+      dealerUp: dealerUpCard.rank,
+    });
+    return isCorrect;
+  },
+
+  startHand() {
+    MistakeTracker._currentActions = [];
+  },
+
+  finalizeHand(hands, dealerHand, outcome, pnl) {
+    const entry = {
+      handNum: MistakeTracker.history.length + 1,
+      playerCards: hands.map(h => h.cards.map(c => c.rank + c.suit)),
+      dealerCards: dealerHand.map(c => c.rank + c.suit),
+      outcome,
+      pnl,
+      actions: [...MistakeTracker._currentActions],
+      timestamp: Date.now(),
+    };
+    MistakeTracker.history.unshift(entry);
+    if (MistakeTracker.history.length > MAX_HISTORY) MistakeTracker.history.length = MAX_HISTORY;
+    MistakeTracker._currentActions = [];
+    MistakeTracker.saveHistory();
+  },
+
+  saveHistory() {
+    try {
+      localStorage.setItem(HISTORY_KEY, JSON.stringify({
+        decisions: MistakeTracker.decisions,
+        history: MistakeTracker.history.slice(0, MAX_HISTORY),
+      }));
+    } catch(e) {}
+  },
+
+  loadHistory() {
+    try {
+      const raw = localStorage.getItem(HISTORY_KEY);
+      if (raw) {
+        const data = JSON.parse(raw);
+        MistakeTracker.decisions = data.decisions || { total: 0, correct: 0 };
+        MistakeTracker.history = data.history || [];
+      }
+    } catch(e) {}
+  },
+
+  reset() {
+    MistakeTracker.decisions = { total: 0, correct: 0 };
+    MistakeTracker.history = [];
+    MistakeTracker._currentActions = [];
+    MistakeTracker.saveHistory();
+  },
+};
+
+/* ============================================================
+   MODULE 5c: WALLET — bank balance, buy-in, table limits
+   ============================================================ */
+const WALLET_KEY = 'blackjack_wallet_v1';
+const Wallet = {
+  bank: 10000,
+  tableLimits: { minBet: 5, maxBet: 500, maxBuyIn: 5000 },
+
+  save() { try { localStorage.setItem(WALLET_KEY, JSON.stringify({ bank: Wallet.bank })); } catch(e) {} },
+  load() {
+    try {
+      const raw = localStorage.getItem(WALLET_KEY);
+      if (raw) { const d = JSON.parse(raw); if (typeof d.bank === 'number') Wallet.bank = d.bank; }
+    } catch(e) {}
+  },
+
+  canBuyIn(amount) {
+    return amount > 0 && amount <= Wallet.bank && amount <= Wallet.tableLimits.maxBuyIn;
+  },
+  buyIn(amount) {
+    if (!Wallet.canBuyIn(amount)) return false;
+    Wallet.bank -= amount;
+    GS.player.balance += amount;
+    Wallet.save(); StorageManager.save();
+    return true;
+  },
+  cashOut() {
+    Wallet.bank += GS.player.balance;
+    GS.player.balance = 0;
+    Wallet.save(); StorageManager.save();
+  },
+  showModal() {
+    const m = $('wallet-modal');
+    $('wm-bank-val').textContent = '$' + Wallet.bank.toLocaleString();
+    const lim = Wallet.tableLimits;
+    $('wm-limits').textContent = `Min $${lim.minBet} · Max bet $${lim.maxBet} · Max buy-in $${lim.maxBuyIn.toLocaleString()}`;
+    $('wm-amount').value = '';
+    m.classList.add('show');
+    $('backdrop').classList.add('show');
+  },
+  hideModal() {
+    $('wallet-modal').classList.remove('show');
+    $('backdrop').classList.remove('show');
+  },
+  doBuyIn() {
+    const val = parseInt($('wm-amount').value, 10);
+    if (!val || !Wallet.canBuyIn(val)) return;
+    Wallet.buyIn(val);
+    Wallet.hideModal();
+    $('bank-badge').textContent = '$' + Wallet.bank.toLocaleString();
+    UIRenderer.render();
+  },
+};
+
+/* ============================================================
+   MODULE 5d: AI PLAYER — CPU opponents with intelligence levels
+   Intelligence: low ~40%, mid ~70%, high ~95% correct rate
+   ============================================================ */
+const AI_IQ = { off: 0, low: 0.40, mid: 0.70, high: 0.95 };
+
+function makeAISeat(side) {
+  return {
+    side,            // 'left' | 'right'
+    active: false,
+    iq: 'off',       // 'off' | 'low' | 'mid' | 'high'
+    balance: 1000,
+    hands: [],       // same structure as player hands
+    bet: 0,
+    outcome: null,
+    pnl: 0,
+  };
+}
+
+const AIPlayer = {
+  seats: [makeAISeat('left'), makeAISeat('right')],
+
+  getSeat(side) { return AIPlayer.seats.find(s => s.side === side); },
+
+  activate(side, iq) {
+    const seat = AIPlayer.getSeat(side);
+    seat.active = iq !== 'off';
+    seat.iq = iq;
+    seat.balance = seat.active ? Math.max(seat.balance, 500) : seat.balance;
+    AIPlayer.renderSeat(side);
+  },
+
+  /** Decide bet amount — proportional to balance */
+  decideBet(seat) {
+    const lim = Wallet.tableLimits;
+    const options = [lim.minBet, lim.minBet * 2, lim.minBet * 5, lim.minBet * 10];
+    const affordable = options.filter(o => o <= seat.balance && o <= lim.maxBet);
+    if (affordable.length === 0) return 0;
+    return affordable[Math.floor(Math.random() * affordable.length)];
+  },
+
+  /** Decide action — uses BasicStrategy with random error based on IQ */
+  decideAction(seat, handIdx, dealerUpCard) {
+    const hand = seat.hands[handIdx];
+    if (!hand) return 'stand';
+    const r = rules();
+    const va = GameEngine.validActions(hand.cards, dealerUpCard, r, handIdx, seat.hands.length, hand.bet, seat.balance, hand.cards.length === 2);
+
+    const correctRate = AI_IQ[seat.iq] || 0.5;
+    const opt = BasicStrategy.getOptimal(hand.cards, dealerUpCard, r, va.split, va.double, va.surrender);
+
+    if (Math.random() < correctRate) return opt.action;
+
+    // Random wrong action
+    const actions = [];
+    if (va.hit) actions.push('hit');
+    if (va.stand) actions.push('stand');
+    if (va.double) actions.push('double');
+    const pick = actions[Math.floor(Math.random() * actions.length)];
+    return pick || 'stand';
+  },
+
+  /** Deal initial cards to AI seat */
+  dealToSeat(seat) {
+    const bet = AIPlayer.decideBet(seat);
+    if (bet <= 0) { seat.active = false; AIPlayer.renderSeat(seat.side); return; }
+    seat.bet = bet;
+    seat.balance -= bet;
+    seat.outcome = null; seat.pnl = 0;
+    const c1 = drawCard(true), c2 = drawCard(true);
+    seat.hands = [{ cards: [c1, c2], bet, surrendered: false, isOriginal: true, outcome: null }];
+  },
+
+  /** AI plays one full hand */
+  async playSeat(seat) {
+    if (!seat.active || seat.hands.length === 0) return;
+    const el = $(`ai-seat-${seat.side}`);
+    el.classList.add('active-turn');
+
+    for (let hi = 0; hi < seat.hands.length; hi++) {
+      const hand = seat.hands[hi];
+      let maxTurns = 15;
+      while (maxTurns-- > 0) {
+        const { total } = GameEngine.evaluateHand(hand.cards);
+        if (total >= 21) break;
+        const action = AIPlayer.decideAction(seat, hi, GS.dealerHand[0]);
+        if (action === 'stand') break;
+        if (action === 'hit') {
+          hand.cards.push(drawCard(true));
+          AIPlayer.renderSeat(seat.side);
+          await sleep(500);
+        } else if (action === 'double' && hand.cards.length === 2) {
+          seat.balance -= hand.bet; hand.bet *= 2;
+          hand.cards.push(drawCard(true));
+          AIPlayer.renderSeat(seat.side);
+          await sleep(500);
+          break;
+        } else {
+          break;
+        }
+      }
+    }
+
+    el.classList.remove('active-turn');
+    AIPlayer.renderSeat(seat.side);
+  },
+
+  /** Resolve AI seat after dealer plays */
+  resolveSeat(seat) {
+    if (!seat.active || seat.hands.length === 0) return;
+    const { resolvedHands, totalDelta } = BettingSystem.resolveHand(seat.hands, GS.dealerHand, rules(), makeStats());
+    seat.hands = resolvedHands;
+    seat.balance += totalDelta;
+    seat.outcome = resolvedHands[0]?.outcome || null;
+    seat.pnl = resolvedHands.reduce((a, h) => a + (h.pnl || 0), 0);
+    AIPlayer.renderSeat(seat.side);
+  },
+
+  /** Render an AI seat's DOM */
+  renderSeat(side) {
+    const seat = AIPlayer.getSeat(side);
+    const el = $(`ai-seat-${side}`);
+    if (!seat.active) { el.style.display = 'none'; return; }
+    el.style.display = '';
+    el.classList.toggle('empty', false);
+
+    $(`ai-${side}-name`).textContent = side === 'left' ? 'CPU 1' : 'CPU 2';
+    $(`ai-${side}-balance`).textContent = '$' + seat.balance.toLocaleString();
+
+    // Bet circle
+    const bc = $(`ai-${side}-bet`);
+    bc.textContent = seat.bet > 0 ? '$' + seat.bet : '';
+
+    // Cards
+    const cc = $(`ai-${side}-cards`);
+    cc.innerHTML = '';
+    if (seat.hands.length > 0) {
+      seat.hands[0].cards.forEach(c => cc.appendChild(UIRenderer.buildCardEl(c, true, false)));
+    }
+
+    // Score
+    const sc = $(`ai-${side}-score`);
+    sc.innerHTML = '';
+    if (seat.hands.length > 0 && seat.hands[0].cards.length > 0) {
+      const { total, soft } = GameEngine.evaluateHand(seat.hands[0].cards);
+      const bust = total > 21;
+      sc.textContent = bust ? 'BUST' : soft ? `${total}s` : total;
+      sc.style.color = bust ? '#e74c3c' : 'var(--text)';
+    }
+
+    // Outcome
+    const oc = $(`ai-${side}-outcome`);
+    if (seat.outcome) {
+      oc.textContent = UIRenderer.outcomeLabel(seat.outcome) + (seat.pnl !== 0 ? ` ${UIRenderer.fmtSigned(seat.pnl)}` : '');
+      oc.className = 'seat-outcome ' + UIRenderer.outcomeClass(seat.outcome);
+    } else {
+      oc.textContent = ''; oc.className = 'seat-outcome';
+    }
+  },
+
+  /** Reset seats for new hand */
+  resetForNewHand() {
+    AIPlayer.seats.forEach(seat => {
+      if (!seat.active) return;
+      seat.hands = []; seat.bet = 0; seat.outcome = null; seat.pnl = 0;
+      if (seat.balance <= 0) { seat.balance = 500; } // Auto rebuy
+      AIPlayer.renderSeat(seat.side);
+    });
+  },
+
+  save() {
+    try {
+      localStorage.setItem('blackjack_ai_v1', JSON.stringify(AIPlayer.seats.map(s => ({
+        side: s.side, active: s.active, iq: s.iq, balance: s.balance
+      }))));
+    } catch(e) {}
+  },
+  load() {
+    try {
+      const raw = localStorage.getItem('blackjack_ai_v1');
+      if (raw) {
+        const data = JSON.parse(raw);
+        data.forEach(d => {
+          const seat = AIPlayer.getSeat(d.side);
+          if (seat) { seat.active = d.active; seat.iq = d.iq; seat.balance = d.balance; }
+        });
+      }
+    } catch(e) {}
+  },
+};
+
+/* ============================================================
+   MODULE 5e: AUTO-BET — repeat last bet & auto-deal
+   ============================================================ */
+const AutoBet = {
+  enabled: false,
+  lastBet: 0,
+
+  toggle() {
+    AutoBet.enabled = !AutoBet.enabled;
+    $('auto-bet-toggle').classList.toggle('on', AutoBet.enabled);
+  },
+
+  /** Called after resolution — if enabled, set bet and deal */
+  tryAutoDeal() {
+    if (!AutoBet.enabled || AutoBet.lastBet <= 0) return false;
+    if (GS.player.balance < AutoBet.lastBet) return false;
+    GS.currentBet = Math.min(AutoBet.lastBet, GS.player.balance, Wallet.tableLimits.maxBet);
+    if (GS.currentBet < Wallet.tableLimits.minBet) return false;
+    setTimeout(() => actionDeal(), 800);
+    return true;
+  },
+};
 
 /* ============================================================
    MODULE 6: LOCALISATION — STRINGS & T() helper
@@ -1356,6 +2766,13 @@ const STRINGS = {
     dasYes:'DAS ✓', dasNo:'No DAS', resplitTo:'Re-split to', hands_:'hands',
     noResplitAces:'No re-split aces', lateSurrYes:'Surrender ✓',
     noSurrender:'No surrender', noHoleCard:'ENHC (no hole card)', doubleOn:'Double 9/10/11 only',
+    advisor:'Strategy Advisor', optimal:'OPTIMAL', correct:'✓ CORRECT', wrong:'✗ WRONG',
+    accuracy:'Accuracy', handHistory:'HAND HISTORY', noHistory:'No hands played yet.',
+    advisorToggle:'Strategy Advisor',
+    bankBalance:'BANK', tableBalance:'TABLE', autoBet:'Auto-Bet',
+    buyIn:'BUY IN', buyMore:'Buy More Chips', leaveTable:'Leave Table',
+    aiPlayers:'AI PLAYERS', aiOff:'Off', aiLow:'Low', aiMid:'Mid', aiHigh:'High',
+    walletTitle:'BUY IN', minBet:'Min', maxBet:'Max',
   },
   'zh-TW': {
     title:'廿一點', hit:'補牌', stand:'停牌', double:'加倍', split:'分牌',
@@ -1384,6 +2801,13 @@ const STRINGS = {
     dasYes:'分牌後可加倍 ✓', dasNo:'分牌後不可加倍', resplitTo:'最多分牌至', hands_:'手',
     noResplitAces:'不可重分A', lateSurrYes:'可投降 ✓',
     noSurrender:'不可投降', noHoleCard:'無底牌 (ENHC)', doubleOn:'僅限9/10/11加倍',
+    advisor:'策略顧問', optimal:'最佳', correct:'✓ 正確', wrong:'✗ 錯誤',
+    accuracy:'準確率', handHistory:'手牌歷史', noHistory:'尚未進行任何手牌。',
+    advisorToggle:'策略顧問',
+    bankBalance:'銀行', tableBalance:'桌面', autoBet:'自動下注',
+    buyIn:'買入', buyMore:'購買更多籌碼', leaveTable:'離開桌面',
+    aiPlayers:'AI 玩家', aiOff:'關閉', aiLow:'低', aiMid:'中', aiHigh:'高',
+    walletTitle:'買入', minBet:'最低', maxBet:'最高',
   },
 };
 
@@ -1505,7 +2929,7 @@ const UIRenderer = {
     $('dealer-label').textContent = T('dealer');
     $('player-label').textContent = T('yourHand');
     $('place-bet-msg').textContent = T('placeBet');
-    $('balance-lbl').textContent = T('balance');
+    $('balance-lbl').textContent = T('tableBalance');
     $('bet-lbl').textContent = T('bet');
     $('btn-clear').textContent = T('clear');
     $('btn-deal').textContent = T('deal');
@@ -1525,14 +2949,20 @@ const UIRenderer = {
     $('variant-section-lbl').textContent = T('ruleVariant');
     $('active-rules-lbl').textContent = T('activeRules');
     $('count-toggle-lbl').textContent = T('showCount');
+    $('advisor-toggle-lbl').textContent = T('advisorToggle');
     $('lang-toggle-lbl').textContent = T('language');
     $('starting-bal-lbl').textContent = T('startingBalance');
     $('bal-set-btn').textContent = T('set');
     $('btn-reset-session').textContent = T('resetSession');
     $('stats-panel-title').textContent = T('stats');
+    $('history-panel-title').textContent = T('handHistory');
     $('ins-title').textContent = T('insurance');
     $('btn-ins-accept').textContent = T('insAccept');
     $('btn-ins-decline').textContent = T('insDecline');
+    // New feature labels
+    $('wm-title').textContent = T('walletTitle');
+    if ($('btn-rebuy')) $('btn-rebuy').textContent = T('buyMore');
+    if ($('btn-leave-table')) $('btn-leave-table').textContent = T('leaveTable');
     document.querySelectorAll('#lang-toggle button').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.lang === lang);
     });
@@ -1572,7 +3002,23 @@ const UIRenderer = {
         $('btn-split').disabled     = !va.split;
         $('btn-surrender').disabled = !va.surrender;
         $('btn-surrender').classList.toggle('hidden', !r.lateSurrender);
+
+        // Strategy advisor
+        const advBar = $('advisor-bar');
+        if (p.preferences.showAdvisor && GS.dealerHand[0]) {
+          const opt = BasicStrategy.getOptimal(ah.cards, GS.dealerHand[0], r, va.split, va.double, va.surrender);
+          $('adv-label').textContent = T('optimal');
+          $('adv-action').textContent = opt.action.toUpperCase();
+          $('adv-reason').textContent = opt.reason;
+          advBar.classList.add('show');
+          GS._currentOptimal = opt;
+        } else {
+          advBar.classList.remove('show');
+          GS._currentOptimal = null;
+        }
       }
+    } else {
+      $('advisor-bar').classList.remove('show');
     }
 
     if (!GS.animating) {
@@ -1666,6 +3112,73 @@ const UIRenderer = {
       row.innerHTML = `<span class="sk">${k}</span><span class="sv ${cls}">${v}</span>`;
       sl.appendChild(row);
     });
+
+    // Accuracy badge at bottom of stats
+    const acc = MistakeTracker.accuracy();
+    if (acc !== null) {
+      const ab = document.createElement('div');
+      ab.className = 'accuracy-badge ' + (acc >= 80 ? 'good' : acc >= 60 ? 'ok' : 'bad');
+      ab.style.cssText = 'margin:12px auto 0;width:fit-content';
+      ab.innerHTML = `<span>${T('accuracy')}:</span> <span class="acc-pct">${acc}%</span> <span>(${MistakeTracker.decisions.correct}/${MistakeTracker.decisions.total})</span>`;
+      sl.appendChild(ab);
+    }
+  },
+
+  showAdvisorFeedback(isCorrect) {
+    const fb = $('advisor-feedback');
+    fb.textContent = isCorrect ? T('correct') : T('wrong');
+    fb.className = 'show ' + (isCorrect ? 'correct' : 'wrong');
+    setTimeout(() => { fb.classList.remove('show'); }, 1200);
+  },
+
+  renderHistoryPanel() {
+    const hl = $('history-list'); hl.innerHTML = '';
+    const ha = $('history-accuracy'); ha.innerHTML = '';
+
+    const acc = MistakeTracker.accuracy();
+    if (acc !== null) {
+      const cls = acc >= 80 ? 'good' : acc >= 60 ? 'ok' : 'bad';
+      ha.innerHTML = `<span class="accuracy-badge ${cls}" style="display:inline-flex;margin:0 auto">`
+        + `<span>${T('accuracy')}:</span> <span class="acc-pct">${acc}%</span>`
+        + `<span>(${MistakeTracker.decisions.correct}/${MistakeTracker.decisions.total})</span></span>`;
+    }
+
+    if (MistakeTracker.history.length === 0) {
+      hl.innerHTML = `<div style="padding:16px;color:var(--text-muted);text-align:center;font-size:12px">${T('noHistory')}</div>`;
+      return;
+    }
+
+    MistakeTracker.history.forEach(entry => {
+      const div = document.createElement('div'); div.className = 'history-entry';
+      const ocColor = { win: 'var(--gold)', blackjack: 'var(--gold-light)', lose: '#e74c3c', push: 'var(--text-muted)', surrender: '#f39c12' };
+      const pnlStr = entry.pnl >= 0 ? `+$${entry.pnl}` : `-$${Math.abs(entry.pnl)}`;
+
+      let html = `<div class="he-header"><span class="he-hand-num">#${entry.handNum}</span>`
+        + `<span class="he-outcome" style="color:${ocColor[entry.outcome] || 'var(--text)'}">${(entry.outcome || '').toUpperCase()} ${pnlStr}</span></div>`;
+
+      // Cards display
+      html += `<div class="he-cards">`;
+      entry.playerCards.forEach((hand, i) => {
+        if (entry.playerCards.length > 1) html += `<span style="color:var(--text-muted);font-size:9px">H${i+1}: </span>`;
+        html += hand.join(' ');
+        if (i < entry.playerCards.length - 1) html += ' | ';
+      });
+      html += ` <span style="color:var(--text-muted)">vs</span> ${entry.dealerCards.join(' ')}</div>`;
+
+      // Action pills
+      if (entry.actions.length > 0) {
+        html += `<div class="he-actions">`;
+        entry.actions.forEach(a => {
+          const cls = a.correct ? 'correct' : 'wrong';
+          const icon = a.correct ? '✓' : '✗';
+          html += `<span class="he-action-pill ${cls}">${icon} ${a.action} ${a.correct ? '' : '→ ' + a.optimal}</span>`;
+        });
+        html += `</div>`;
+      }
+
+      div.innerHTML = html;
+      hl.appendChild(div);
+    });
   },
 };
 
@@ -1690,11 +3203,41 @@ function showMsg(text, color, duration) {
 async function actionDeal() {
   if (GS.currentBet <= 0 || GS.phase !== PHASE.BETTING || GS.animating) return;
   if (GS.currentBet > GS.player.balance) return;
+  // Enforce table limits
+  if (GS.currentBet < Wallet.tableLimits.minBet || GS.currentBet > Wallet.tableLimits.maxBet) return;
 
   const r = rules();
+  AutoBet.lastBet = GS.currentBet;
   GS.player.balance -= GS.currentBet;
   GS.hands = []; GS.dealerHand = []; GS.activeHandIndex = 0;
   GS.insuranceBet = 0; GS.isFirstAction = true;
+  GS.animating = true;
+  GS._currentOptimal = null;
+  MistakeTracker.startHand();
+
+  // Deal AI seats
+  AIPlayer.resetForNewHand();
+  AIPlayer.seats.forEach(seat => { if (seat.active) AIPlayer.dealToSeat(seat); });
+
+  $('phase-betting').classList.add('hidden');
+  $('place-bet-msg').classList.add('hidden');
+  $('balance-val').textContent = '$' + GS.player.balance.toLocaleString();
+  $('dealer-cards').innerHTML = ''; $('player-cards').innerHTML = '';
+  $('dealer-score-row').innerHTML = ''; $('player-score-row').innerHTML = '';
+  $('single-hand-area').classList.remove('hidden');
+  $('split-zone').classList.add('hidden');
+  AnimationEngine.renderChipStack(0);
+  ChipAnimations.pushBetIn();
+
+  // Show bet in player bet circle
+  const bcChips = $('bc-chips');
+  if (bcChips) { bcChips.textContent = '$' + GS.currentBet; }
+
+  // Dealer hand sprite — dealing pose
+  DealerSprite.startDeal();
+
+  // Shuffle animation
+  await AnimationEngine.shuffleAnimation();
 
   const p1 = drawCard(true), d1 = drawCard(true), p2 = drawCard(true);
   const dealerCards = [d1];
@@ -1703,16 +3246,8 @@ async function actionDeal() {
   GS.dealerHand = dealerCards;
   GS.hands = [{ cards: [p1, p2], bet: GS.currentBet, surrendered: false, isOriginal: true, outcome: null }];
   GS.phase = PHASE.PLAYER_TURN;
-  GS.animating = true;
 
-  $('phase-betting').classList.add('hidden');
   $('phase-player').classList.remove('hidden');
-  $('place-bet-msg').classList.add('hidden');
-  $('balance-val').textContent = '$' + GS.player.balance.toLocaleString();
-  $('dealer-cards').innerHTML = ''; $('player-cards').innerHTML = '';
-  $('dealer-score-row').innerHTML = ''; $('player-score-row').innerHTML = '';
-  $('single-hand-area').classList.remove('hidden');
-  $('split-zone').classList.add('hidden');
 
   await AnimationEngine.dealCard('player-cards', p1, false);
   await AnimationEngine.dealCard('dealer-cards', d1, false);
@@ -1722,6 +3257,7 @@ async function actionDeal() {
   $('dealer-score-row').appendChild(UIRenderer.scoreBadgeEl(GS.dealerHand, false, null));
   $('player-score-row').appendChild(UIRenderer.scoreBadgeEl(GS.hands[0].cards, true, null));
 
+  DealerSprite.endDeal();
   GS.animating = false;
   UIRenderer.render();
 
@@ -1732,9 +3268,20 @@ async function actionDeal() {
   }
 }
 
+function _recordAction(action) {
+  if (GS.player.preferences.showAdvisor && GS._currentOptimal && GS.dealerHand[0]) {
+    const ah = GS.hands[GS.activeHandIndex];
+    if (ah) {
+      const ok = MistakeTracker.recordDecision(action, GS._currentOptimal, ah.cards, GS.dealerHand[0]);
+      UIRenderer.showAdvisorFeedback(ok);
+    }
+  }
+}
+
 function actionHit() {
   if (GS.phase !== PHASE.PLAYER_TURN || GS.animating) return;
   const ah = GS.hands[GS.activeHandIndex]; if (!ah) return;
+  _recordAction('hit');
   const card = drawCard(true);
   ah.cards.push(card);
   GS.isFirstAction = false;
@@ -1749,12 +3296,14 @@ function actionHit() {
 
 function actionStand() {
   if (GS.phase !== PHASE.PLAYER_TURN || GS.animating) return;
+  _recordAction('stand');
   GS.isFirstAction = false; advanceHand();
 }
 
 function actionDouble() {
   if (GS.phase !== PHASE.PLAYER_TURN || GS.animating) return;
   const ah = GS.hands[GS.activeHandIndex]; if (!ah) return;
+  _recordAction('double');
   GS.player.balance -= ah.bet; ah.bet *= 2;
   const card = drawCard(true); ah.cards.push(card); GS.isFirstAction = false;
   if (GS.hands.length === 1) {
@@ -1769,6 +3318,7 @@ function actionDouble() {
 function actionSplit() {
   if (GS.phase !== PHASE.PLAYER_TURN || GS.animating) return;
   const hand = GS.hands[GS.activeHandIndex]; if (!hand) return;
+  _recordAction('split');
   const [c1, c2] = hand.cards;
   GS.player.balance -= hand.bet;
   const nc1 = drawCard(true), nc2 = drawCard(true);
@@ -1799,6 +3349,7 @@ function forceAdvanceCurrentAceHand() {
 function actionSurrender() {
   if (GS.phase !== PHASE.PLAYER_TURN || GS.animating) return;
   if (!rules().lateSurrender || !GS.isFirstAction || GS.activeHandIndex !== 0) return;
+  _recordAction('surrender');
   GS.hands[GS.activeHandIndex].surrendered = true;
   GS.isFirstAction = false;
   setTimeout(() => advanceHand(), 300);
@@ -1816,8 +3367,16 @@ function advanceHand() {
 
 async function advanceToDealer() {
   GS.phase = PHASE.DEALER_TURN; GS.animating = true; UIRenderer.render();
+
+  // AI seats play first
+  for (const seat of AIPlayer.seats) {
+    if (seat.active && seat.hands.length > 0) await AIPlayer.playSeat(seat);
+  }
+
   await sleep(350);
-  const allBust = GS.hands.every(h => h.surrendered || GameEngine.isBust(h.cards));
+  DealerSprite.startFlip();
+  const allBust = GS.hands.every(h => h.surrendered || GameEngine.isBust(h.cards))
+    && AIPlayer.seats.every(s => !s.active || s.hands.every(h => GameEngine.isBust(h.cards)));
   if (!allBust) {
     GS.dealerHand = GS.dealerHand.map(c => ({...c, faceUp: true}));
     AnimationEngine.revealHoleCard();
@@ -1864,24 +3423,67 @@ function resolveHands() {
   GS.player.stats = sessionStats;
   GS.phase = PHASE.RESOLUTION;
 
+  // Resolve AI seats
+  AIPlayer.seats.forEach(seat => AIPlayer.resolveSeat(seat));
+  AIPlayer.save();
+
+  // Chip animations
   const pOutcome = resolvedHands[0]?.outcome;
-  if      (pOutcome === 'blackjack') showMsg(T('outcomeBlackjack'), '#f0d070', 2500);
-  else if (pOutcome === 'win')       showMsg(`+$${Math.abs(totalPnl)}`, '#C9A84C', 1800);
-  else if (pOutcome === 'lose')      showMsg(`-$${Math.abs(totalPnl)}`, '#e74c3c', 1800);
-  else if (pOutcome === 'push')      showMsg(T('outcomePush'), '#8899aa', 1500);
-  else if (pOutcome === 'surrender') showMsg(T('outcomeSurrender'), '#f39c12', 1500);
+  if (pOutcome === 'win' || pOutcome === 'blackjack') {
+    ChipAnimations.collectWin();
+  } else if (pOutcome === 'lose') {
+    ChipAnimations.collectLose();
+  }
+  DealerSprite.endFlip();
+
+  if (pOutcome === 'blackjack') {
+    showMsg(T('outcomeBlackjack'), '#f0d070', 2500);
+    AnimationEngine.goldenGlow();
+    AnimationEngine.goldCoinBurst();
+  } else if (pOutcome === 'win') {
+    showMsg(`+$${Math.abs(totalPnl)}`, '#C9A84C', 1800);
+    AnimationEngine.goldCoinBurst();
+  } else if (pOutcome === 'lose') {
+    const wasBust = GS.hands.some(h => GameEngine.evaluateHand(h.cards).total > 21 && h.outcome === 'lose');
+    showMsg(`-$${Math.abs(totalPnl)}`, '#e74c3c', 1800);
+    AnimationEngine.redVignette();
+    if (wasBust) AnimationEngine.bustScatter();
+  } else if (pOutcome === 'push') {
+    showMsg(T('outcomePush'), '#8899aa', 1500);
+  } else if (pOutcome === 'surrender') {
+    showMsg(T('outcomeSurrender'), '#f39c12', 1500);
+  }
+
+  // Finalize hand history
+  const primaryPnl = resolvedHands.reduce((a, h) => a + (h.pnl || 0), 0);
+  MistakeTracker.finalizeHand(resolvedHands, GS.dealerHand, pOutcome, primaryPnl);
 
   UIRenderer.render(); UIRenderer.renderStatsPanel(); StorageManager.save();
+  $('bank-badge').textContent = '$' + Wallet.bank.toLocaleString();
 }
 
 function actionNewHand() {
   if (GS.phase !== PHASE.RESOLUTION) return;
+
+  // Check if player needs rebuy
+  if (GS.player.balance <= 0 && Wallet.bank > 0) {
+    Wallet.showModal();
+    return;
+  }
+
   GS.phase = PHASE.BETTING; GS.currentBet = 0; GS.hands = []; GS.dealerHand = [];
   GS.activeHandIndex = 0; GS.insuranceBet = 0; GS.isFirstAction = true;
   $('dealer-cards').innerHTML = ''; $('dealer-score-row').innerHTML = '';
   $('player-cards').innerHTML = ''; $('player-score-row').innerHTML = '';
   $('split-zone').innerHTML = '';
+  const bcChips = $('bc-chips'); if (bcChips) bcChips.textContent = '';
+  AIPlayer.resetForNewHand();
   UIRenderer.render();
+
+  // Auto-bet
+  if (AutoBet.enabled) {
+    AutoBet.tryAutoDeal();
+  }
 }
 
 const GameActions = {
@@ -1911,8 +3513,9 @@ const GameActions = {
 const SettingsController = {
   openPanel(id) { SettingsController.closeAllPanels(); $(id).classList.add('show'); $('backdrop').classList.add('show'); },
   closeAllPanels() {
-    ['settings-panel','stats-panel'].forEach(id => $(id).classList.remove('show'));
-    $('insurance-modal').classList.remove('show'); $('backdrop').classList.remove('show');
+    ['settings-panel','stats-panel','history-panel'].forEach(id => $(id).classList.remove('show'));
+    $('insurance-modal').classList.remove('show'); $('wallet-modal').classList.remove('show');
+    $('backdrop').classList.remove('show');
   },
   buildVariantList() {
     const vl = $('variant-list'); vl.innerHTML = '';
@@ -1945,15 +3548,22 @@ const SettingsController = {
   },
   resetSession() {
     const bal = Math.max(100, parseInt($('bal-input').value, 10) || GS.player.preferences.startingBalance);
-    const lang = GS.player.preferences.lang, variant = GS.player.preferences.variant, showCount = GS.player.preferences.showCount;
+    const lang = GS.player.preferences.lang, variant = GS.player.preferences.variant;
+    const showCount = GS.player.preferences.showCount, showAdvisor = GS.player.preferences.showAdvisor;
     GS.player = makePlayer(bal);
     GS.player.preferences.startingBalance = bal;
-    GS.player.preferences.lang = lang; GS.player.preferences.variant = variant; GS.player.preferences.showCount = showCount;
+    GS.player.preferences.lang = lang; GS.player.preferences.variant = variant;
+    GS.player.preferences.showCount = showCount; GS.player.preferences.showAdvisor = showAdvisor;
+    MistakeTracker.reset();
     reshuffleShoe();
     GS.phase = PHASE.BETTING; GS.currentBet = 0; GS.hands = []; GS.dealerHand = []; GS.insuranceBet = 0;
     $('dealer-cards').innerHTML = ''; $('player-cards').innerHTML = ''; $('split-zone').innerHTML = '';
+    AIPlayer.resetForNewHand();
     SettingsController.closeAllPanels();
     SettingsController.buildVariantList(); UIRenderer.renderStatsPanel(); UIRenderer.render(); StorageManager.save();
+    $('bank-badge').textContent = '$' + Wallet.bank.toLocaleString();
+    const r = rules();
+    $('strip-bj-pay').textContent = r.blackjackPayLabel;
   },
   changeLanguage(lang) {
     GS.player.preferences.lang = lang;
@@ -1977,10 +3587,11 @@ function wireEvents() {
       if (GS.phase !== PHASE.BETTING) return;
       GS.currentBet = BettingSystem.addChip(GS.currentBet, parseInt(btn.dataset.chip), GS.player.balance);
       btn.classList.remove('chip-bounce'); void btn.offsetWidth; btn.classList.add('chip-bounce');
+      AnimationEngine.renderChipStack(GS.currentBet);
       UIRenderer.render();
     });
   });
-  $('btn-clear').addEventListener('click', () => { if (GS.phase === PHASE.BETTING) { GS.currentBet = 0; UIRenderer.render(); } });
+  $('btn-clear').addEventListener('click', () => { if (GS.phase === PHASE.BETTING) { GS.currentBet = 0; AnimationEngine.renderChipStack(0); UIRenderer.render(); } });
   $('btn-deal').addEventListener('click', actionDeal);
   $('btn-hit').addEventListener('click', actionHit);
   $('btn-stand').addEventListener('click', actionStand);
@@ -1992,11 +3603,45 @@ function wireEvents() {
   $('btn-ins-accept').addEventListener('click', GameActions.acceptInsurance);
   $('btn-ins-decline').addEventListener('click', GameActions.declineInsurance);
 
+  // Wallet / buy-in
+  $('wm-buyin-btn').addEventListener('click', () => Wallet.doBuyIn());
+  $('wm-leave-btn').addEventListener('click', () => { Wallet.cashOut(); Wallet.hideModal(); UIRenderer.render(); });
+  document.querySelectorAll('.wm-quick').forEach(btn => {
+    btn.addEventListener('click', () => { $('wm-amount').value = btn.dataset.buyin; });
+  });
+
+  // Rebuy / leave table (broke message buttons)
+  if ($('btn-rebuy')) $('btn-rebuy').addEventListener('click', () => Wallet.showModal());
+  if ($('btn-leave-table')) $('btn-leave-table').addEventListener('click', () => {
+    Wallet.cashOut();
+    GS.phase = PHASE.BETTING; GS.currentBet = 0; GS.hands = []; GS.dealerHand = [];
+    $('dealer-cards').innerHTML = ''; $('player-cards').innerHTML = ''; $('split-zone').innerHTML = '';
+    UIRenderer.render();
+  });
+
+  // Auto-bet toggle
+  $('auto-bet-toggle').addEventListener('click', () => AutoBet.toggle());
+
+  // AI config selects
+  $('ai-left-select').addEventListener('change', (e) => { AIPlayer.activate('left', e.target.value); AIPlayer.save(); });
+  $('ai-right-select').addEventListener('change', (e) => { AIPlayer.activate('right', e.target.value); AIPlayer.save(); });
+
   $('count-toggle').addEventListener('click', () => {
     GS.player.preferences.showCount = !GS.player.preferences.showCount;
     $('count-toggle').classList.toggle('on', GS.player.preferences.showCount);
     UIRenderer.updateCount(); StorageManager.save();
   });
+  $('advisor-toggle').addEventListener('click', () => {
+    GS.player.preferences.showAdvisor = !GS.player.preferences.showAdvisor;
+    $('advisor-toggle').classList.toggle('on', GS.player.preferences.showAdvisor);
+    UIRenderer.render(); StorageManager.save();
+  });
+  $('btn-history').addEventListener('click', () => {
+    UIRenderer.renderHistoryPanel();
+    SettingsController.closeAllPanels();
+    $('history-panel').classList.add('show'); $('backdrop').classList.add('show');
+  });
+  $('history-close').addEventListener('click', SettingsController.closeAllPanels);
   document.querySelectorAll('#lang-toggle button').forEach(btn => {
     btn.addEventListener('click', () => SettingsController.changeLanguage(btn.dataset.lang));
   });
@@ -2037,13 +3682,39 @@ function wireEvents() {
 
 function init() {
   StorageManager.load();
+  MistakeTracker.loadHistory();
+  Wallet.load();
+  AIPlayer.load();
   GS.shoe = GameEngine.createShoe(rules().numDecks);
   $('count-toggle').classList.toggle('on', GS.player.preferences.showCount);
+  $('advisor-toggle').classList.toggle('on', GS.player.preferences.showAdvisor);
   $('bal-input').value = GS.player.preferences.startingBalance;
   UIRenderer.updateAllText();
   wireEvents();
   UIRenderer.render();
   UIRenderer.renderStatsPanel();
+
+  // Init AI seats from saved state
+  AIPlayer.seats.forEach(seat => {
+    AIPlayer.renderSeat(seat.side);
+    if (seat.active) {
+      $(`ai-${seat.side}-select`).value = seat.iq;
+    }
+  });
+
+  // Init bank badge
+  $('bank-badge').textContent = '$' + Wallet.bank.toLocaleString();
+
+  // Update table info strip with variant info
+  const r = rules();
+  $('strip-bj-pay').textContent = r.blackjackPayLabel;
+  const lim = Wallet.tableLimits;
+  $('strip-limits').textContent = `MIN $${lim.minBet} · MAX $${lim.maxBet}`;
+
+  // Show buy-in modal if player has no balance
+  if (GS.player.balance <= 0 && Wallet.bank > 0) {
+    setTimeout(() => Wallet.showModal(), 300);
+  }
 }
 
 init();
